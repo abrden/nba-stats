@@ -4,7 +4,7 @@ import logging
 
 import zmq
 
-from middleware.reducer import Reducer
+from .reducer import Reducer
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 logger = logging.getLogger("Main")
