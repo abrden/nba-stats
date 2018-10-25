@@ -13,7 +13,6 @@ context = zmq.Context()
 client = context.socket(zmq.ROUTER)
 client.bind(endpoint)
 
-# Send 10 tasks scattered to A twice as often as B
 for _ in range(10):
     logger.debug("Receiving message from mappers")
     message = client.recv()
