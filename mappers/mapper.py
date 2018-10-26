@@ -1,5 +1,6 @@
 from multiprocessing import Process
 import logging
+import random
 
 import zmq
 
@@ -7,29 +8,41 @@ import zmq
 class Mapper(Process):
 
     class MapperMiddleware:
-        def __init__(self, endpoint):
+        def __init__(self, mw_endpoint, key_queue_endpoint):
             context = zmq.Context()
-            self.socket = context.socket(zmq.REQ)
-            self.socket.setsockopt(zmq.REQ_RELAXED, 1)
-            self.socket.setsockopt(zmq.REQ_CORRELATE, 1)
-            self.socket.connect(endpoint)
+
+            self.mw_socket = context.socket(zmq.REQ)
+            self.mw_socket.setsockopt(zmq.REQ_RELAXED, 1)
+            self.mw_socket.setsockopt(zmq.REQ_CORRELATE, 1)
+            self.mw_socket.connect(mw_endpoint)
+
+            self.key_queue_socket = context.socket(zmq.REQ)
+            self.key_queue_socket.setsockopt(zmq.REQ_RELAXED, 1)
+            self.key_queue_socket.setsockopt(zmq.REQ_CORRELATE, 1)
+            self.key_queue_socket.connect(key_queue_endpoint)
 
         def send(self, data):
-            return self.socket.send(data)
+            return self.mw_socket.send(data)
 
-    def __init__(self, endpoint, data):
+        def notify_key(self, key):
+            return self.key_queue_socket.send(key)
+
+    def __init__(self, mw_endpoint, key_queue_endpoint, data):
         super().__init__()
         self.logger = logging.getLogger("Mapper")
-        self.endpoint = endpoint
+        self.mw_endpoint = mw_endpoint
+        self.key_queue_endpoint = key_queue_endpoint
         self.data = data
         self.mw = None
 
     def run(self):
-        self.mw = self.MapperMiddleware(self.endpoint)  # FIXME doesnt work if I initialize it on the constructor
+        self.mw = self.MapperMiddleware(self.mw_endpoint, self.key_queue_endpoint)  # FIXME doesnt work if I initialize it on the constructor
 
         self.logger.debug("Working with data: %s", self.data)
         for i in self.data:
-            result = "hello world {}".format(i)
-            self.logger.debug("Emitting result: %s", result)
-            self.mw.send(result.encode())
+            key = random.choice([b'A', b'B'])
+            value = "hello world {}".format(i)
+            self.logger.debug("Emitting result: (%s, %s)", key, value)
+            self.mw.notify_key(key)
+            self.mw.send(key + "#".encode() + value.encode())
         self.mw.send(b'END')

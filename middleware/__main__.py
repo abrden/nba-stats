@@ -16,12 +16,12 @@ client.bind(endpoint)
 for _ in range(10):
     logger.debug("Receiving message from mappers")
     message = client.recv()
-    logger.debug("Message received %r", message)
-    ident = random.choice([b'A', b'B'])
+    key, value = message.split('#'.encode())
+    logger.debug("Message received %r, key %r, value %r", message, key, value)
     logger.debug("Sending message to reducer")
-    client.send_multipart([ident, message])
+    client.send_multipart([key, value])
     logger.debug("Task sent")
 
-client.send_multipart([b'A', b'END'])
+client.send_multipart([b'A', b'END'])  # FIXME implement for dynamic keys
 client.send_multipart([b'B', b'END'])
 logger.debug("End")

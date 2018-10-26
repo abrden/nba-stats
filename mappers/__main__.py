@@ -7,10 +7,11 @@ from .mapper import Mapper
 
 logger.debug("Start")
 
-endpoint = "tcp://0.0.0.0:5559"
+mw_endpoint = "tcp://0.0.0.0:5559"
+key_queue_endpoint = "tcp://0.0.0.0:5560"
 data = list(range(1, 11))
 
-mapper = Mapper(endpoint, data)
+mapper = Mapper(mw_endpoint, key_queue_endpoint, data)
 mapper.start()
 mapper.join()
 
