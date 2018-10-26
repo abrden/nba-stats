@@ -13,9 +13,9 @@ key_queue_endpoint = "tcp://0.0.0.0:5560"
 logger.debug("Start")
 
 context = zmq.Context()
-server = context.socket(zmq.REP)
-server.setsockopt(zmq.REQ_RELAXED, 1)
-server.setsockopt(zmq.REQ_CORRELATE, 1)
+server = context.socket(zmq.PULL)
+#server.setsockopt(zmq.REQ_RELAXED, 1)
+#server.setsockopt(zmq.REQ_CORRELATE, 1)
 server.bind(key_queue_endpoint)
 
 reducers = {}
