@@ -3,7 +3,7 @@ import logging
 
 import zmq
 
-from reducers.reducer import Reducer
+from .reducer import Reducer
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 logger = logging.getLogger("Reducers")
@@ -24,11 +24,14 @@ server.bind(key_queue_endpoint)
 
 logger.debug("Spawning reducers")
 reducers = {}
-for _ in range(10):
-    logger.debug("Receiving key from mappers")
+while True:
+    logger.debug("Receiving key from mapper")
     key = server.recv()
     logger.debug("Received key: %r", key)
-    if key in reducers:
+    if key == b"END":
+        logger.debug("END received")
+        break
+    elif key in reducers:
         logger.debug("A reducer is already created for key: %r", key)
     else:
         logger.debug("Starting new reducer")
