@@ -33,6 +33,7 @@ class Reducer(Process):
             # We receive one part, with the workload
             self.logger.debug("Receiving")
             request = self.mw.receive()
+            self.logger.debug("Received msg: %r", request)
             finished = request == b"END"
             if finished:
                 self.logger.debug("%s received: %s", self.key, total)

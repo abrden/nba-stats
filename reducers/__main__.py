@@ -1,3 +1,4 @@
+import time
 import logging
 
 import zmq
@@ -9,15 +10,19 @@ logger = logging.getLogger("Reducers")
 
 mw_endpoint = "tcp://0.0.0.0:5559"
 key_queue_endpoint = "tcp://0.0.0.0:5560"
+reducer_spawner_endpoint = "tcp://0.0.0.0:5561"
 
 logger.debug("Start")
 
 context = zmq.Context()
+
+reducer_spawner_server = context.socket(zmq.REQ)
+reducer_spawner_server.connect(reducer_spawner_endpoint)
+
 server = context.socket(zmq.PULL)
-#server.setsockopt(zmq.REQ_RELAXED, 1)
-#server.setsockopt(zmq.REQ_CORRELATE, 1)
 server.bind(key_queue_endpoint)
 
+logger.debug("Spawning reducers")
 reducers = {}
 for _ in range(10):
     logger.debug("Receiving key from mappers")
@@ -28,7 +33,15 @@ for _ in range(10):
     else:
         logger.debug("Starting new reducer")
         r = Reducer(key, mw_endpoint)
-        r.start()  # FIXME join reducers
+        r.start()
         reducers[key] = r
+
+time.sleep(0.1)  # FIXME time for reducers to stabilize?? Otherwise first msgs are lost. Taken from zmq doc example
+reducer_spawner_server.send(b"READY")
+
+logger.debug("Joining reducers")
+for key in reducers:
+    logger.debug("Joining reducer with key %r", key)
+    reducers[key].join()
 
 logger.debug("End")

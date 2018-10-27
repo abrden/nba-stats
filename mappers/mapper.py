@@ -17,8 +17,6 @@ class Mapper(Process):
             self.mw_socket.connect(mw_endpoint)
 
             self.key_queue_socket = context.socket(zmq.PUSH)
-            #self.key_queue_socket.setsockopt(zmq.REQ_RELAXED, 1)
-            #self.key_queue_socket.setsockopt(zmq.REQ_CORRELATE, 1)
             self.key_queue_socket.connect(key_queue_endpoint)
 
         def send(self, data):
