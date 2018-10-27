@@ -41,8 +41,8 @@ class Mapper(Process):
         self.logger.debug("Working with data: %s", self.data)
         for i in self.data:
             key = random.choice([b'A', b'B'])
-            value = "hello world {}".format(i)
+            value = "hello world {}".format(i).encode()
             self.logger.debug("Emitting result: (%s, %s)", key, value)
             self.mw.notify_key(key)
-            self.mw.send(key + "#".encode() + value.encode())
+            self.mw.send(key + "#".encode() + value)
         self.mw.send(b'END')

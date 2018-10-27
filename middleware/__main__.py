@@ -1,4 +1,4 @@
-import random
+import time
 import logging
 
 import zmq
@@ -15,10 +15,11 @@ client.bind(endpoint)
 
 for _ in range(10):
     logger.debug("Receiving message from mappers")
-    message = client.recv()
-    logger.debug("Message received %r", message)
-    key, value = message.split('#'.encode())
-    logger.debug("Message received %r, key %r, value %r", message, key, value)
+    message = client.recv_multipart()  # FIXME why
+    logger.debug("Multipart received %r", message)
+    key, value = message[3].split('#'.encode())  # FIXME WHYYYY
+    logger.debug("Message received %r, key %r, value %r", message[3], key, value)
+    time.sleep(1)
     logger.debug("Sending message to reducer")
     client.send_multipart([key, value])
     logger.debug("Task sent")
