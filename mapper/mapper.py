@@ -1,11 +1,10 @@
-from multiprocessing import Process
 import logging
 import random
 
 import zmq
 
 
-class Mapper(Process):
+class Mapper:
 
     class VentilatorConnection:
         def __init__(self, ventilator_endpoint, mappers_ready_endpoint):
@@ -54,7 +53,7 @@ class Mapper(Process):
         self.reducer_spawner_conn = None
         self.mw = None
 
-    def run(self):
+    def start(self):
         self.ventilator_conn = self.VentilatorConnection(self.ventilator_endpoint, self.mappers_ready_endpoint)
         self.reducer_spawner_conn = self.ReducerSpawnerConnection(self.key_queue_endpoint)
         self.mw = self.MiddlewareConnection(self.mw_endpoint)  # FIXME doesnt work if I initialize it on the constructor
