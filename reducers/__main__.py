@@ -1,47 +1,26 @@
-import time
+import os
 import logging
 
-import zmq
-
-from reducers.reducer import Reducer
+from .reducer_spawner import ReducerSpawner
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
-logger = logging.getLogger("Reducers")
+
+N = int(os.environ['MAPPERS'])  # Mappers quantity
 
 mw_endpoint = "tcp://0.0.0.0:5559"
 key_queue_endpoint = "tcp://0.0.0.0:5560"
 reducer_spawner_endpoint = "tcp://0.0.0.0:5561"
+reducers_ready_endpoint = "tcp://0.0.0.0:5564"
 
-logger.debug("Start")
 
-context = zmq.Context()
+def main():
+    logger = logging.getLogger("Reducers")
+    logger.debug("Start")
+    spawner = ReducerSpawner(key_queue_endpoint, reducer_spawner_endpoint, reducers_ready_endpoint)
+    spawner.start(N, mw_endpoint)
+    spawner.close()
+    logger.debug("End")
 
-reducer_spawner_server = context.socket(zmq.REQ)
-reducer_spawner_server.connect(reducer_spawner_endpoint)
 
-server = context.socket(zmq.PULL)
-server.bind(key_queue_endpoint)
-
-logger.debug("Spawning reducers")
-reducers = {}
-for _ in range(10):
-    logger.debug("Receiving key from mappers")
-    key = server.recv()
-    logger.debug("Received key: %r", key)
-    if key in reducers:
-        logger.debug("A reducer is already created for key: %r", key)
-    else:
-        logger.debug("Starting new reducer")
-        r = Reducer(key, mw_endpoint)
-        r.start()
-        reducers[key] = r
-
-time.sleep(0.1)  # FIXME time for reducers to stabilize?? Otherwise first msgs are lost. Taken from zmq doc example
-reducer_spawner_server.send(b"READY")
-
-logger.debug("Joining reducers")
-for key in reducers:
-    logger.debug("Joining reducer with key %r", key)
-    reducers[key].join()
-
-logger.debug("End")
+if __name__ == "__main__":
+    main()

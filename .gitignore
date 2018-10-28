@@ -115,3 +115,6 @@ routing.ipc
 
 # PyCharm
 .idea/
+
+# Mac
+.DS_Store

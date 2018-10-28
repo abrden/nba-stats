@@ -21,10 +21,13 @@ reducer_spawner_client.recv()
 logger.debug("Signal received, sending data to reducers")
 
 keys = {}
-for _ in range(10):
+while True:
     logger.debug("Receiving message from mappers")
     message = server.recv_multipart()  # FIXME why do I have to recv a multipart if mapper sent me a string
     logger.debug("Multipart received %r", message)
+    if message[3] == b"END":
+        logger.debug("END received")
+        break
     key, value = message[3].split('#'.encode())
 
     if key not in keys:
