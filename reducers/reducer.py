@@ -20,19 +20,20 @@ class Reducer(Process):
         def receive(self):
             return self.s.recv()
 
-    def __init__(self, key, endpoint, reducer_ready_endpoint):
+    def __init__(self, key, endpoint, reducer_ready_endpoint, fun):
         super().__init__()
         self.logger = logging.getLogger("Reducer-%s" % key)
         self.key = key
         self.endpoint = endpoint
         self.reducer_ready_endpoint = reducer_ready_endpoint
+        self.fun = fun
         self.mw = None
 
     def run(self):
         self.mw = self.ReducerMiddleware(self.key, self.endpoint, self.reducer_ready_endpoint)  # FIXME doesnt work if I initialize it on the constructor
 
         self.logger.debug("Running")
-        total = 0
+        acc = None
         while True:
             # We receive one part, with the workload
             self.logger.debug("Receiving")
@@ -40,7 +41,8 @@ class Reducer(Process):
             self.logger.debug("Received msg: %r", request)
             finished = request == b"END"
             if finished:
-                self.logger.debug("%s received: %s", self.key, total)
+                self.logger.debug("%s received: %s", self.key, acc)
                 break
-            self.logger.debug("Adding up")
-            total += 1
+
+            self.logger.debug("Processing task")
+            acc = self.fun(acc, request)

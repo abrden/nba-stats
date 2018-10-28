@@ -53,7 +53,7 @@ class Mapper:
         self.reducer_spawner_conn = None
         self.mw = None
 
-    def start(self):
+    def start(self, fun):
         self.ventilator_conn = self.VentilatorConnection(self.ventilator_endpoint, self.mappers_ready_endpoint)
         self.reducer_spawner_conn = self.ReducerSpawnerConnection(self.key_queue_endpoint)
         self.mw = self.MiddlewareConnection(self.mw_endpoint)  # FIXME doesnt work if I initialize it on the constructor
@@ -67,8 +67,9 @@ class Mapper:
                 self.mw.send(b"END")
                 return
             self.logger.debug("Task received: %s", task)
-            key = random.choice([b'A', b'B'])
-            value = task
+
+            key, value = fun(task)
+
             self.logger.debug("Emitting result: (%s, %s)", key, value)
             self.reducer_spawner_conn.notify_key(key)
             self.mw.send(key + "#".encode() + value)

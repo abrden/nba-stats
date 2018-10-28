@@ -10,11 +10,18 @@ ventilator_endpoint = "tcp://0.0.0.0:5562"
 mappers_ready_endpoint = "tcp://0.0.0.0:5563"
 
 
+def map_fun(task):
+    import random
+    key = random.choice([b'A', b'B'])
+    value = task
+    return key, value
+
+
 def main():
     logger = logging.getLogger("Mapper")
     logger.debug("Start")
     mapper = Mapper(mw_endpoint, key_queue_endpoint, ventilator_endpoint, mappers_ready_endpoint)
-    mapper.start()
+    mapper.start(map_fun)
     logger.debug("End")
 
 

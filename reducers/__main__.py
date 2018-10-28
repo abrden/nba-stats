@@ -13,11 +13,17 @@ reducer_spawner_endpoint = "tcp://0.0.0.0:5561"
 reducers_ready_endpoint = "tcp://0.0.0.0:5564"
 
 
+def fun(acc, req):
+    if acc is None:
+        acc = 0
+    return acc + 1
+
+
 def main():
     logger = logging.getLogger("Reducers")
     logger.debug("Start")
     spawner = ReducerSpawner(key_queue_endpoint, reducer_spawner_endpoint, reducers_ready_endpoint)
-    spawner.start(N, mw_endpoint)
+    spawner.start(N, mw_endpoint, fun)
     spawner.close()
     logger.debug("End")
 
