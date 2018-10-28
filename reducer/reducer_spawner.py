@@ -36,18 +36,31 @@ class ReducerSpawner:
             self.logger.debug("Sending overall ACK to MW")
             self.reducer_spawner_server.send(b"READY")
 
-    def __init__(self, key_queue_endpoint, reducer_spawner_endpoint, reducers_ready_endpoint):
+    class SinkConnection:
+        def __init__(self, endpoint):
+            context = zmq.Context()
+
+            self.client = context.socket(zmq.REQ)
+            self.client.connect(endpoint)
+
+        def notify_reducers_quantity(self, reducers):
+            self.client.send_string(str(reducers))
+
+    def __init__(self, key_queue_endpoint, reducer_spawner_endpoint, reducers_ready_endpoint, sink_endpoint):
         self.logger = logging.getLogger("ReducerSpawner")
         self.reducers = {}
         self.key_queue_endpoint = key_queue_endpoint
         self.reducer_spawner_endpoint = reducer_spawner_endpoint
         self.reducers_ready_endpoint = reducers_ready_endpoint
+        self.sink_endpoint = sink_endpoint
         self.mw_conn = None
         self.mappers_conn = None
+        self.sink_conn = None
 
-    def start(self, mappers, mw_endpoint, fun):
+    def start(self, mappers, mw_endpoint, reducer_sink_endpoint, fun):
         self.mw_conn = self.MiddlewareConnection(self.reducer_spawner_endpoint, self.reducers_ready_endpoint)
         self.mappers_conn = self.MappersConnection(self.key_queue_endpoint)
+        self.sink_conn = self.SinkConnection(self.sink_endpoint)
 
         self.logger.debug("Spawning reducers")
         ends_received = 0
@@ -64,12 +77,15 @@ class ReducerSpawner:
                 self.logger.debug("A reducer is already created for key: %r", key)
             else:
                 self.logger.debug("Starting new reducer")
-                r = Reducer(key, mw_endpoint, self.reducers_ready_endpoint, fun)
+                r = Reducer(key, mw_endpoint, self.reducers_ready_endpoint, reducer_sink_endpoint, fun)
                 r.start()
                 self.reducers[key] = r
 
         self.logger.debug("The spawned reducers are: %r", self.reducers.keys())
 
+        self.logger.debug("Sending reducers quantity to Sink")
+        self.sink_conn.notify_reducers_quantity(len(self.reducers))
+        self.logger.debug("Syncing reducers with MW")
         self.mw_conn.sync_reducers(len(self.reducers))
 
     def close(self):
