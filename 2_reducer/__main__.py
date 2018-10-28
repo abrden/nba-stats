@@ -14,9 +14,13 @@ reducers_ready_endpoint = "tcp://0.0.0.0:5564"
 
 
 def fun(acc, req):
+    '''
+    Takes the accumulated scored points of the player and the new points. Returns the sum of the accumulated and the new points.
+    '''
+    points = int(req.decode())
     if acc is None:
         acc = 0
-    return acc + 1
+    return acc + points
 
 
 def main():
