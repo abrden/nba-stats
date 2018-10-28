@@ -28,7 +28,7 @@ class Mapper:
             self.key_queue_socket.connect(key_queue_endpoint)
 
         def notify_key(self, key):
-            return self.key_queue_socket.send(key)
+            return self.key_queue_socket.send_string(key)
 
     class MiddlewareConnection:
         def __init__(self, mw_endpoint):
@@ -63,13 +63,16 @@ class Mapper:
             task = self.ventilator_conn.receive_task()
             if task == b"END":
                 self.logger.debug("END received")
-                self.reducer_spawner_conn.notify_key(b"END")  # TODO Implement close method for conn objects
+                self.reducer_spawner_conn.notify_key("END")  # TODO Implement close method for conn objects
                 self.mw.send(b"END")
                 return
             self.logger.debug("Task received: %s", task)
 
-            key, value = fun(task)
-
-            self.logger.debug("Emitting result: (%s, %s)", key, value)
-            self.reducer_spawner_conn.notify_key(key)
-            self.mw.send(key + "#".encode() + value)
+            result = fun(task)
+            if result:
+                key, value = result
+                self.logger.debug("Emitting result: (%s, %s)", key, value)
+                self.reducer_spawner_conn.notify_key(key)
+                self.mw.send((key + "#" + value).encode())
+            else:
+                self.logger.debug("Result is None. Not emitting.")

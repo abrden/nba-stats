@@ -68,6 +68,8 @@ class ReducerSpawner:
                 r.start()
                 self.reducers[key] = r
 
+        self.logger.debug("The spawned reducers are: %r", self.reducers.keys())
+
         self.mw_conn.sync_reducers(len(self.reducers))
 
     def close(self):
