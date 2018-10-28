@@ -1,3 +1,4 @@
-cat
-dog
-hamster
+self previous shot,player position,home game,location x,opponent previous shot,home team,shot type,points,away team,location y,time,date,shoot player,time from last shot,quarter,current shot outcome
+,SF,Yes,97,SCORED,ATL,Pullup Jump Shot,2,WAS,405,1:09,2016-10-27,Kent Bazemore,,1,MISSED
+MISSED,C,Yes,52,SCORED,ATL,Tip Dunk Shot,2,WAS,250,1:11,2016-10-27,Dwight Howard,2,1,SCORED
+SCORED,SG,Yes,239,MISSED,ATL,Jump Shot,2,WAS,223,1:41,2016-10-27,Dwight Howard,30,1,SCORED

@@ -49,6 +49,7 @@ class DataVentilator:
         for log in shotlogs:
             self.logger.debug("Reading shotlog: %s", log)
             with open(log, "r") as file:
+                header = file.readline()
                 line = file.readline()
                 while line:
                     self.logger.debug("Read line: %s", line)

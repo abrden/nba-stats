@@ -6,7 +6,7 @@ import zmq
 
 class Reducer(Process):
 
-    class ReducerMiddleware:
+    class MiddlewareConnection:
         def __init__(self, key, endpoint, reducer_ready_endpoint):
             context = zmq.Context()
             self.s = context.socket(zmq.DEALER)
@@ -20,19 +20,35 @@ class Reducer(Process):
         def receive(self):
             return self.s.recv()
 
-    def __init__(self, key, endpoint, reducer_ready_endpoint):
+    class SinkConnection:
+        def __init__(self, key, endpoint):
+            self.key = key.decode()
+
+            context = zmq.Context()
+
+            self.client = context.socket(zmq.PUSH)
+            self.client.connect(endpoint)
+
+        def send_result(self, result):
+            self.client.send_string(self.key + "#" + str(result))
+
+    def __init__(self, key, endpoint, reducer_ready_endpoint, sink_endpoint, fun):
         super().__init__()
         self.logger = logging.getLogger("Reducer-%s" % key)
         self.key = key
         self.endpoint = endpoint
         self.reducer_ready_endpoint = reducer_ready_endpoint
+        self.sink_endpoint = sink_endpoint
+        self.fun = fun
         self.mw = None
+        self.sink_conn = None
 
     def run(self):
-        self.mw = self.ReducerMiddleware(self.key, self.endpoint, self.reducer_ready_endpoint)  # FIXME doesnt work if I initialize it on the constructor
+        self.mw = self.MiddlewareConnection(self.key, self.endpoint, self.reducer_ready_endpoint)  # FIXME doesnt work if I initialize it on the constructor
+        self.sink_conn = self.SinkConnection(self.key, self.sink_endpoint)
 
         self.logger.debug("Running")
-        total = 0
+        acc = None
         while True:
             # We receive one part, with the workload
             self.logger.debug("Receiving")
@@ -40,7 +56,11 @@ class Reducer(Process):
             self.logger.debug("Received msg: %r", request)
             finished = request == b"END"
             if finished:
-                self.logger.debug("%s received: %s", self.key, total)
+                self.logger.debug("%s received: %s", self.key, acc)
                 break
-            self.logger.debug("Adding up")
-            total += 1
+
+            self.logger.debug("Processing task")
+            acc = self.fun(acc, request)
+
+        self.logger.debug("Sending final result %r to sink", acc)
+        self.sink_conn.send_result(acc)
