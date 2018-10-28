@@ -1,6 +1,6 @@
 import logging
 
-from .mapper import Mapper
+from mapper.mapper import Mapper
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 

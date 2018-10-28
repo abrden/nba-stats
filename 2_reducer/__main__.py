@@ -1,7 +1,7 @@
 import os
 import logging
 
-from .reducer_spawner import ReducerSpawner
+from reducer.reducer_spawner import ReducerSpawner
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 
