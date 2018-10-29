@@ -23,18 +23,33 @@ class DataSink:
         def receive_reducers_number(self):
             return int(self.server.recv().decode())
 
-    def __init__(self, endpoint):
+    class CollectorConnection:
+        def __init__(self, endpoint):
+            context = zmq.Context()
+            self.client = context.socket(zmq.PUSH)
+            self.client.connect(endpoint)
+
+        def send_result(self, result):
+            self.client.send_string(str(result))
+
+    def __init__(self, endpoint, collector_endpoint):
         self.logger = logging.getLogger("DataSink")
         self.endpoint = endpoint
+        self.collector_endpoint = collector_endpoint
         self.reducers_conn = None
+        self.collector_conn = None
 
     def start(self, reducer_spawner_endpoint, fun):
         self.reducers_conn = self.ReducersConnection(self.endpoint)
+        self.collector_conn = self.CollectorConnection(self.collector_endpoint)
 
         reducer_spawner_conn = self.ReducerSpawnerConnection(reducer_spawner_endpoint)
         self.logger.debug("Receiving reducers quantity")
         reducers = reducer_spawner_conn.receive_reducers_number()
         self.logger.debug("Reducers quantity received: %d", reducers)
+
+        import time
+        time.sleep(1)  # FIXME Sink receives only the last reducers msg
 
         results_received = 0
         results = []
@@ -51,4 +66,6 @@ class DataSink:
                 self.logger.debug("All results have been received")
                 break
 
-        return fun(results)
+        ans = fun(results)
+
+        self.collector_conn.send_result(ans)

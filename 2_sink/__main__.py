@@ -7,6 +7,7 @@ logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(thread
 
 endpoint = "tcp://0.0.0.0:5568"
 reducer_spawner_endpoint = "tcp://0.0.0.0:5569"
+collector_endpoint = "tcp://0.0.0.0:5573"
 
 
 def decode_result(result):
@@ -27,9 +28,8 @@ def collect_fun(results):
 def main():
     logger = logging.getLogger("Sink")
     logger.debug("Start")
-    sink = DataSink(endpoint)
-    result = sink.start(reducer_spawner_endpoint, collect_fun)
-    logger.debug("The result is: %r", result)
+    sink = DataSink(endpoint, collector_endpoint)
+    sink.start(reducer_spawner_endpoint, collect_fun)
     logger.debug("End")
 
 
