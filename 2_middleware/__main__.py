@@ -7,8 +7,8 @@ logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(thread
 
 N = int(os.environ['MAPPERS'])  # Mappers quantity
 
-endpoint = "tcp://0.0.0.0:5559"
-reducer_spawner_endpoint = "tcp://0.0.0.0:5561"
+endpoint = os.environ['ENDPOINT']
+reducer_spawner_endpoint = os.environ['REDUCER_SPAWNER_ENDPOINT']
 
 
 def main():

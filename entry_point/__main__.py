@@ -1,3 +1,4 @@
+import os
 import logging
 
 from .trigger import Trigger
@@ -5,11 +6,11 @@ from .results_collector import ResultsCollector
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 
-ventilator_endpoint_1 = "tcp://0.0.0.0:5570"
-ventilator_endpoint_2 = "tcp://0.0.0.0:5571"
-ventilator_endpoint_3 = "tcp://0.0.0.0:5572"
+ventilator_endpoint_1 = os.environ['VENT1_ENDPOINT']
+ventilator_endpoint_2 = os.environ['VENT2_ENDPOINT']
+ventilator_endpoint_3 = os.environ['VENT3_ENDPOINT']
 
-endpoint = "tcp://0.0.0.0:5573"
+endpoint = os.environ['ENDPOINT']
 
 
 def main():

@@ -1,3 +1,4 @@
+import os
 import logging
 from multiprocessing import Pool
 
@@ -5,9 +6,9 @@ from sink.sink import DataSink
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 
-endpoint = "tcp://0.0.0.0:5568"
-reducer_spawner_endpoint = "tcp://0.0.0.0:5569"
-collector_endpoint = "tcp://0.0.0.0:5573"
+endpoint = os.environ['ENDPOINT']
+reducer_spawner_endpoint = os.environ['REDUCER_SPAWNER_ENDPOINT']
+collector_endpoint = os.environ['COLLECTOR_ENDPOINT']
 
 
 def decode_result(result):
