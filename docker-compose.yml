@@ -17,7 +17,7 @@ services:
   2_ventilator:
     build:
       context: .
-      dockerfile: ventilator/Dockerfile
+      dockerfile: 2_ventilator/Dockerfile
     depends_on:
       - entry
       - 2_middleware

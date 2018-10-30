@@ -1,7 +1,7 @@
 import os
 import logging
 
-from .data_ventilator import DataVentilator
+from ventilator.data_ventilator import DataVentilator
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 
