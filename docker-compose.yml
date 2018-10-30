@@ -1,0 +1,114 @@
+version: "3"
+services:
+
+  entry:
+    build:
+      context: .
+      dockerfile: entry_point/Dockerfile
+    networks:
+      - 2sink_entry
+      - entry_2ventilator
+    environment:
+      - VENT1_ENDPOINT=tcp://*:5570
+      - VENT2_ENDPOINT=tcp://*:5571
+      - VENT3_ENDPOINT=tcp://*:5572
+      - ENDPOINT=tcp://*:5573
+
+  2_ventilator:
+    build:
+      context: .
+      dockerfile: ventilator/Dockerfile
+    depends_on:
+      - entry
+      - 2_middleware
+      - 2_sink
+      - 2_reducer
+    networks:
+      - entry_2ventilator
+      - 2ventilator_2mapper
+    environment:
+      - MAPPERS=2
+      - DATASET_DIR=NBA-shot-log
+      - ENTRY_ENDPOINT=tcp://entry:5571
+      - ENDPOINT=tcp://*:5562
+      - MAPPERS_READY_ENDPOINT=tcp://*:5563
+
+  2_mapper:
+    build:
+      context: .
+      dockerfile: 2_mapper/Dockerfile
+    depends_on:
+      - entry
+      - 2_middleware
+      - 2_sink
+      - 2_reducer
+      - 2_ventilator
+    networks:
+      - 2mapper_2middleware
+      - 2mapper_2reducer
+      - 2ventilator_2mapper
+    environment:
+      - MW_ENDPOINT=tcp://2_middleware:5559
+      - KEYS_ENDPOINT=tcp://2_reducer:5560
+      - VENTILATOR_ENDPOINT=tcp://2_ventilator:5562
+      - MAPPERS_READY_ENDPOINT=tcp://2_ventilator:5563
+
+  2_middleware:
+    build:
+      context: .
+      dockerfile: 2_middleware/Dockerfile
+    depends_on:
+      - entry
+    networks:
+      - 2mapper_2middleware
+      - 2middleware_2reducer
+    environment:
+      - MAPPERS=2
+      - ENDPOINT=tcp://*:5559
+      - REDUCER_SPAWNER_ENDPOINT=tcp://*:5561
+
+  2_reducer:
+    build:
+      context: .
+      dockerfile: 2_reducer/Dockerfile
+    depends_on:
+      - entry
+      - 2_middleware
+      - 2_sink
+    networks:
+      - 2middleware_2reducer
+      - 2mapper_2reducer
+      - 2reducer_2sink
+    environment:
+      - MAPPERS=2
+      - MW_ENDPOINT=tcp://2_middleware:5559
+      - KEY_QUEUE_ENDPOINT=tcp://*:5560
+      - REDUCER_SPAWNER_ENDPOINT=tcp://2_middleware:5561
+      - REDUCERS_READY_ENDPOINT=tcp://*:5564
+      - REDUCER_REDUCERS_READY_ENDPOINT=tcp://2_reducer:5564
+      - REDUCER_SINK_ENDPOINT=tcp://2_sink:5568
+      - SPAWNER_SINK_ENDPOINT=tcp://2_sink:5569
+
+  2_sink:
+    build:
+      context: .
+      dockerfile: 2_sink/Dockerfile
+    depends_on:
+      - entry
+      - 2_middleware
+    networks:
+      - 2reducer_2sink
+      - 2sink_entry
+    environment:
+      - ENDPOINT=tcp://*:5568
+      - REDUCER_SPAWNER_ENDPOINT=tcp://*:5569
+      - COLLECTOR_ENDPOINT=tcp://entry:5573
+
+networks:
+  entry_2ventilator:
+  2ventilator_2mapper:
+  2mapper_2middleware:
+  2mapper_2reducer:
+  2middleware_2reducer:
+  2reducer_2sink:
+  2sink_entry:

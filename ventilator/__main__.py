@@ -8,14 +8,15 @@ logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(thread
 N = int(os.environ['MAPPERS'])  # Mappers quantity
 DATASET_DIR = os.environ['DATASET_DIR']
 
-ventilator_endpoint = "tcp://0.0.0.0:5562"
-mappers_ready_endpoint = "tcp://0.0.0.0:5563"
+entry_signal_endpoint = os.environ["ENTRY_ENDPOINT"]
+ventilator_endpoint = os.environ["ENDPOINT"]
+mappers_ready_endpoint = os.environ["MAPPERS_READY_ENDPOINT"]
 
 
 def main():
     logger = logging.getLogger("Ventilator")
     logger.debug("Start")
-    ventilator = DataVentilator(N, ventilator_endpoint, mappers_ready_endpoint)
+    ventilator = DataVentilator(N, ventilator_endpoint, mappers_ready_endpoint, entry_signal_endpoint)
     ventilator.start(DATASET_DIR)
     logger.debug("End")
 

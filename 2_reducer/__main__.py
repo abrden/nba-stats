@@ -7,12 +7,14 @@ logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(thread
 
 N = int(os.environ['MAPPERS'])  # Mappers quantity
 
-mw_endpoint = "tcp://0.0.0.0:5559"
-key_queue_endpoint = "tcp://0.0.0.0:5560"
-reducer_spawner_endpoint = "tcp://0.0.0.0:5561"
-reducers_ready_endpoint = "tcp://0.0.0.0:5564"
-reducer_sink_endpoint = "tcp://0.0.0.0:5568"
-spawner_sink_endpoint = "tcp://0.0.0.0:5569"
+mw_endpoint = os.environ['MW_ENDPOINT']
+key_queue_endpoint = os.environ['KEY_QUEUE_ENDPOINT']
+reducer_spawner_endpoint = os.environ['REDUCER_SPAWNER_ENDPOINT']
+reducers_ready_endpoint = os.environ['REDUCERS_READY_ENDPOINT']
+reducer_reducers_ready_endpoint = os.environ['REDUCER_REDUCERS_READY_ENDPOINT']
+reducer_sink_endpoint = os.environ['REDUCER_SINK_ENDPOINT']
+spawner_sink_endpoint = os.environ['SPAWNER_SINK_ENDPOINT']
+
 
 def fun(acc, req):
     '''
@@ -28,7 +30,7 @@ def main():
     logger = logging.getLogger("Reducers")
     logger.debug("Start")
     spawner = ReducerSpawner(key_queue_endpoint, reducer_spawner_endpoint, reducers_ready_endpoint, spawner_sink_endpoint)
-    spawner.start(N, mw_endpoint, reducer_sink_endpoint, fun)
+    spawner.start(N, mw_endpoint, reducer_reducers_ready_endpoint, reducer_sink_endpoint, fun)
     spawner.close()
     logger.debug("End")
 

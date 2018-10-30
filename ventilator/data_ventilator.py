@@ -32,15 +32,34 @@ class DataVentilator:
             for _ in range(self.mappers):
                 self.sender.send_string("END")
 
-    def __init__(self, mappers, ventilator_endpoint, mappers_ready_endpoint):
+    class EntryConnection:
+        def __init__(self, endpoint):
+            context = zmq.Context()
+
+            self.client = context.socket(zmq.REQ)
+            self.client.connect(endpoint)
+
+            # Send something to indicate I'm already connected
+            self.client.send_string("2")
+
+        def wait_for_start_signal(self):
+            self.client.recv()
+
+    def __init__(self, mappers, ventilator_endpoint, mappers_ready_endpoint, entry_signal_endpoint):
         self.logger = logging.getLogger("DataVentilator")
         self.mappers = mappers
         self.ventilator_endpoint = ventilator_endpoint
         self.mappers_ready_endpoint = mappers_ready_endpoint
+        self.entry_signal_endpoint = entry_signal_endpoint
         self.mappers_conn = None
+        self.entry_conn = None
 
     def start(self, dataset_dir):
         self.mappers_conn = self.MappersConnection(self.mappers, self.ventilator_endpoint, self.mappers_ready_endpoint)
+        self.entry_conn = self.EntryConnection(self.entry_signal_endpoint)
+
+        self.logger.debug("Waiting for entry point start signal")
+        self.entry_conn.wait_for_start_signal()
 
         self.logger.debug("Sending data to mappers")
         set_handler = DatasetHandler(dataset_dir)
