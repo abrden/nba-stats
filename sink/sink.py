@@ -48,9 +48,6 @@ class DataSink:
         reducers = reducer_spawner_conn.receive_reducers_number()
         self.logger.debug("Reducers quantity received: %d", reducers)
 
-        import time
-        time.sleep(1)  # FIXME Sink receives only the last reducers msg
-
         results_received = 0
         results = []
         while True:

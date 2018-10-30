@@ -18,7 +18,6 @@ def main():
     logger.debug("Start")
     t = Trigger(ventilator_endpoint_1, ventilator_endpoint_2, ventilator_endpoint_3)
     t.start()
-    logger.debug("Collecting results")
     c = ResultsCollector(endpoint)
     results = c.start()
     logger.debug("The results are: %r", results)

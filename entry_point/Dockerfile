@@ -3,13 +3,12 @@ FROM ubuntu:16.04
 RUN apt-get update -y && \
     apt-get install -y python3-pip python3-dev
 
-WORKDIR /2_mapper_bundle
+WORKDIR /ep
 
-RUN pip3 install pyzmq
+RUN pip3 install zmq
 
-COPY ./2_mapper /2_mapper_bundle/2_mapper
-COPY ./mapper /2_mapper_bundle/mapper
+COPY ./entry_point /ep/entry_point
 
 ENTRYPOINT [ "python3" ]
 
-CMD [ "-m", "2_mapper" ]
+CMD [ "-u", "-m", "entry_point" ]

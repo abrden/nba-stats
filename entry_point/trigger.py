@@ -24,7 +24,8 @@ class Trigger:
             self.logger.debug("Waiting for ventilator 1")
             #self.server_1.recv()
             #self.logger.debug("Ventilator 1 ready. Waiting for ventilator 2") TODO uncomment when implemented
-            self.server_2.recv()
+            msg = self.server_2.recv()
+            self.logger.debug("Ventilator 2 ready %r", msg)
             #self.logger.debug("Ventilator 1 and 2 ready. Waiting for ventilator 3")
             #self.server_3.recv()
 
@@ -34,6 +35,7 @@ class Trigger:
             #self.server_3.send_string("START")
 
     def __init__(self, ventilator_endpoint_1, ventilator_endpoint_2, ventilator_endpoint_3):
+        self.logger = logging.getLogger("Trigger")
         self.ventilator_endpoint_1 = ventilator_endpoint_1
         self.ventilator_endpoint_2 = ventilator_endpoint_2
         self.ventilator_endpoint_3 = ventilator_endpoint_3
@@ -42,5 +44,7 @@ class Trigger:
         ventilators_conn = self.VentilatorsConnection(self.ventilator_endpoint_1,
                                                       self.ventilator_endpoint_2,
                                                       self.ventilator_endpoint_3)
+        self.logger.debug("Waiting for ventilators")
         ventilators_conn.wait_for_ventilators()
+        self.logger.debug("Signaling ventilators to start")
         ventilators_conn.signal_ventilators()

@@ -57,7 +57,7 @@ class ReducerSpawner:
         self.mappers_conn = None
         self.sink_conn = None
 
-    def start(self, mappers, mw_endpoint, reducer_sink_endpoint, fun):
+    def start(self, mappers, mw_endpoint, reducer_reducers_ready_endpoint, reducer_sink_endpoint, fun):
         self.mw_conn = self.MiddlewareConnection(self.reducer_spawner_endpoint, self.reducers_ready_endpoint)
         self.mappers_conn = self.MappersConnection(self.key_queue_endpoint)
         self.sink_conn = self.SinkConnection(self.sink_endpoint)
@@ -77,7 +77,7 @@ class ReducerSpawner:
                 self.logger.debug("A reducer is already created for key: %r", key)
             else:
                 self.logger.debug("Starting new reducer")
-                r = Reducer(key, mw_endpoint, self.reducers_ready_endpoint, reducer_sink_endpoint, fun)
+                r = Reducer(key, mw_endpoint, reducer_reducers_ready_endpoint, reducer_sink_endpoint, fun)
                 r.start()
                 self.reducers[key] = r
 

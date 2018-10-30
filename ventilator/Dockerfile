@@ -3,13 +3,13 @@ FROM ubuntu:16.04
 RUN apt-get update -y && \
     apt-get install -y python3-pip python3-dev
 
-WORKDIR /2_reducer_bundle
+WORKDIR /2_ventilator_bundle
 
-RUN pip3 install pyzmq
+RUN pip3 install zmq
 
-COPY ./2_reducer /2_reducer_bundle/2_reducer
-COPY ./reducer /2_reducer_bundle/reducer
+COPY ./NBA-shot-log  /2_ventilator_bundle/NBA-shot-log
+COPY ./ventilator /2_ventilator_bundle/2_ventilator
 
 ENTRYPOINT [ "python3" ]
 
-CMD [ "-m", "2_reducer" ]
+CMD [ "-u", "-m", "2_ventilator" ]
