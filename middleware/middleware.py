@@ -31,11 +31,13 @@ class Middleware:
             return message
 
         def send_value_to_reducer(self, key, value):
-            self.server.send_multipart([key.encode(), value.encode()])
+            b_key = str(key).encode()
+            b_value = pickle.dumps(value, -1)
+            self.server.send_multipart([b_key, b_value])
 
         def close_conn_with_reducers(self, reducers):
             for key in reducers:
-                self.server.send_multipart([key.encode(), b'END'])
+                self.send_value_to_reducer(key, "END")
 
     def __init__(self, mappers, endpoint, reducer_spawner_endpoint):
         self.logger = logging.getLogger("Middleware")

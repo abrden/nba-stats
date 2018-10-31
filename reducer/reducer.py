@@ -1,5 +1,6 @@
 from multiprocessing import Process
 import logging
+import pickle
 
 import zmq
 
@@ -18,7 +19,9 @@ class Reducer(Process):
             reducer_ready_ack.send(key)
 
         def receive(self):
-            return self.s.recv()
+            b_data = self.s.recv()
+            return pickle.loads(b_data)
+
 
     class SinkConnection:
         def __init__(self, key, endpoint):
@@ -54,7 +57,7 @@ class Reducer(Process):
             self.logger.debug("Receiving")
             request = self.mw.receive()
             self.logger.debug("Received msg: %r", request)
-            finished = request == b"END"
+            finished = request == "END"
             if finished:
                 self.logger.debug("%s received: %s", self.key, acc)
                 break

@@ -21,9 +21,9 @@ services:
       dockerfile: 1_ventilator/Dockerfile
     depends_on:
       - entry
-      #- 1_middleware
+      - 1_middleware
       #- 1_sink
-      #- 1_reducer
+      - 1_reducer
     networks:
       - entry_1ventilator
       - 1ventilator_1mapper
@@ -59,13 +59,13 @@ services:
       dockerfile: 1_mapper/Dockerfile
     depends_on:
       - entry
-      #- 1_middleware
+      - 1_middleware
       #- 1_sink
-      #- 1_reducer
+      - 1_reducer
       - 1_ventilator
     networks:
-      #- 1mapper_1middleware
-      #- 1mapper_1reducer
+      - 1mapper_1middleware
+      - 1mapper_1reducer
       - 1ventilator_1mapper
     environment:
       - MW_ENDPOINT=tcp://1_middleware:5584
@@ -93,6 +93,20 @@ services:
       - VENTILATOR_ENDPOINT=tcp://2_ventilator:5562
       - MAPPERS_READY_ENDPOINT=tcp://2_ventilator:5563
 
+  1_middleware:
+    build:
+      context: .
+      dockerfile: 1_middleware/Dockerfile
+    depends_on:
+      - entry
+    networks:
+      - 1mapper_1middleware
+      - 1middleware_1reducer
+    environment:
+      - MAPPERS=2
+      - ENDPOINT=tcp://*:5584
+      - REDUCER_SPAWNER_ENDPOINT=tcp://*:5585
+
   2_middleware:
     build:
       context: .
@@ -106,6 +120,28 @@ services:
       - MAPPERS=2
       - ENDPOINT=tcp://*:5559
       - REDUCER_SPAWNER_ENDPOINT=tcp://*:5561
+
+  1_reducer:
+    build:
+      context: .
+      dockerfile: 1_reducer/Dockerfile
+    depends_on:
+      - entry
+      - 1_middleware
+      #- 1_sink
+    networks:
+      - 1middleware_1reducer
+      - 1mapper_1reducer
+      #- 1reducer_1sink
+    environment:
+      - MAPPERS=2
+      - MW_ENDPOINT=tcp://1_middleware:5584
+      - KEY_QUEUE_ENDPOINT=tcp://*:5583
+      - REDUCER_SPAWNER_ENDPOINT=tcp://1_middleware:5585
+      - REDUCERS_READY_ENDPOINT=tcp://*:5586
+      - REDUCER_REDUCERS_READY_ENDPOINT=tcp://1_reducer:5586
+      - REDUCER_SINK_ENDPOINT=tcp://1_sink:5587
+      - SPAWNER_SINK_ENDPOINT=tcp://1_sink:5588
 
   2_reducer:
     build:
@@ -147,6 +183,9 @@ services:
 networks:
   entry_1ventilator:
   1ventilator_1mapper:
+  1mapper_1middleware:
+  1middleware_1reducer:
+  1mapper_1reducer:
   entry_2ventilator:
   2ventilator_2mapper:
   2mapper_2middleware:
