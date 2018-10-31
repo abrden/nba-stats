@@ -22,7 +22,6 @@ class Reducer(Process):
             b_data = self.s.recv()
             return pickle.loads(b_data)
 
-
     class SinkConnection:
         def __init__(self, key, endpoint):
             self.key = key.decode()

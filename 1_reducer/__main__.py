@@ -18,12 +18,15 @@ spawner_sink_endpoint = os.environ['SPAWNER_SINK_ENDPOINT']
 
 def fun(acc, req):
     '''
-    Takes the accumulated scored points of the team and the new points. Returns the sum of the accumulated and the new points.
+    Takes the accumulated scored points of the teams and the new points scored by a team.
+    Returns the accumulated points of the team.
     '''
-    points = int(req)
+    points = req  # Tuple (team_index, new_points)
     if acc is None:
-        acc = 0
-    return acc + points
+        acc = {1: 0, 2: 0}
+
+    acc[points[0]] += points[1]
+    return acc
 
 
 def main():

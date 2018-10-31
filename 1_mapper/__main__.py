@@ -33,7 +33,7 @@ def map_fun(task):
         elif shot_log[HOME_TEAM_INDEX] == 'No':
             index_of_team_that_scored = 2
 
-        ans = (shot_log[DATE_INDEX], shot_log[LOCAL_TEAM_INDEX], shot_log[AWAY_TEAM_INDEX], index_of_team_that_scored), shot_log[POINTS_INDEX]
+        ans = (shot_log[DATE_INDEX], shot_log[LOCAL_TEAM_INDEX], shot_log[AWAY_TEAM_INDEX]), (index_of_team_that_scored, int(shot_log[POINTS_INDEX]))
         key, value = ans
         return key, value
 
