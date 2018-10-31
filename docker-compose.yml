@@ -26,7 +26,7 @@ services:
       #- 1_reducer
     networks:
       - entry_1ventilator
-      #- 1ventilator_1mapper
+      - 1ventilator_1mapper
     environment:
       - MAPPERS=2
       - DATASET_DIR=NBA-shot-log
@@ -52,6 +52,26 @@ services:
       - ENTRY_ENDPOINT=tcp://entry:5571
       - ENDPOINT=tcp://*:5562
       - MAPPERS_READY_ENDPOINT=tcp://*:5563
+
+  1_mapper:
+    build:
+      context: .
+      dockerfile: 1_mapper/Dockerfile
+    depends_on:
+      - entry
+      #- 1_middleware
+      #- 1_sink
+      #- 1_reducer
+      - 1_ventilator
+    networks:
+      #- 1mapper_1middleware
+      #- 1mapper_1reducer
+      - 1ventilator_1mapper
+    environment:
+      - MW_ENDPOINT=tcp://1_middleware:5584
+      - KEYS_ENDPOINT=tcp://1_reducer:5583
+      - VENTILATOR_ENDPOINT=tcp://1_ventilator:5580
+      - MAPPERS_READY_ENDPOINT=tcp://1_ventilator:5581
 
   2_mapper:
     build:
@@ -126,6 +146,7 @@ services:
 
 networks:
   entry_1ventilator:
+  1ventilator_1mapper:
   entry_2ventilator:
   2ventilator_2mapper:
   2mapper_2middleware:

@@ -1,5 +1,5 @@
 import logging
-import random
+import pickle
 
 import zmq
 
@@ -28,7 +28,7 @@ class Mapper:
             self.key_queue_socket.connect(key_queue_endpoint)
 
         def notify_key(self, key):
-            return self.key_queue_socket.send_string(key)
+            return self.key_queue_socket.send_string(str(key))
 
     class MiddlewareConnection:
         def __init__(self, mw_endpoint):
@@ -40,7 +40,8 @@ class Mapper:
             self.mw_socket.connect(mw_endpoint)
 
         def send(self, data):
-            return self.mw_socket.send(data)
+            b_data = pickle.dumps(data, -1)
+            return self.mw_socket.send(b_data)
 
     def __init__(self, mw_endpoint, key_queue_endpoint, ventilator_endpoint, mappers_ready_endpoint):
         super().__init__()
@@ -73,6 +74,6 @@ class Mapper:
                 key, value = result
                 self.logger.debug("Emitting result: (%s, %s)", key, value)
                 self.reducer_spawner_conn.notify_key(key)
-                self.mw.send((key + "#" + value).encode())
+                self.mw.send(result)
             else:
                 self.logger.debug("Result is None. Not emitting.")

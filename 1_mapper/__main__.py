@@ -13,16 +13,28 @@ mappers_ready_endpoint = os.environ['MAPPERS_READY_ENDPOINT']
 
 def map_fun(task):
     '''
-    Takes a row of a shot log. Returns None if the shot is MISSED, or a pair (player_name, points) if the shot is SCORED.
+    Takes a row of a shot log. Returns None if the shot is MISSED, or a pair
+    ((date, local_team, away_team, index_of_team_that_scored), points_scored) if the shot is SCORED.
     '''
 
     SHOT_OUTCOME_INDEX = 15
-    SHOT_PLAYER_INDEX = 12
+    DATE_INDEX = 11
+    LOCAL_TEAM_INDEX = 5
+    AWAY_TEAM_INDEX = 8
     POINTS_INDEX = 7
+    HOME_TEAM_INDEX = 2
 
     shot_log = task.decode().rstrip().split(",")
     if shot_log[SHOT_OUTCOME_INDEX] == "SCORED":
-        key, value = shot_log[SHOT_PLAYER_INDEX], shot_log[POINTS_INDEX]
+
+        index_of_team_that_scored = 0
+        if shot_log[HOME_TEAM_INDEX] == 'Yes':
+            index_of_team_that_scored = 1
+        elif shot_log[HOME_TEAM_INDEX] == 'No':
+            index_of_team_that_scored = 2
+
+        ans = (shot_log[DATE_INDEX], shot_log[LOCAL_TEAM_INDEX], shot_log[AWAY_TEAM_INDEX], index_of_team_that_scored), shot_log[POINTS_INDEX]
+        key, value = ans
         return key, value
 
 
