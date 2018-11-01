@@ -32,7 +32,8 @@ class Reducer(Process):
             self.client.connect(endpoint)
 
         def send_result(self, result):
-            self.client.send_string(self.key + "#" + str(result))
+            b_value = pickle.dumps((self.key, result), -1)
+            self.client.send(b_value)
 
     def __init__(self, key, endpoint, reducer_ready_endpoint, sink_endpoint, fun):
         super().__init__()

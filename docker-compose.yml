@@ -22,7 +22,7 @@ services:
     depends_on:
       - entry
       - 1_middleware
-      #- 1_sink
+      - 1_sink
       - 1_reducer
     networks:
       - entry_1ventilator
@@ -60,7 +60,7 @@ services:
     depends_on:
       - entry
       - 1_middleware
-      #- 1_sink
+      - 1_sink
       - 1_reducer
       - 1_ventilator
     networks:
@@ -128,11 +128,11 @@ services:
     depends_on:
       - entry
       - 1_middleware
-      #- 1_sink
+      - 1_sink
     networks:
       - 1middleware_1reducer
       - 1mapper_1reducer
-      #- 1reducer_1sink
+      - 1reducer_1sink
     environment:
       - MAPPERS=2
       - MW_ENDPOINT=tcp://1_middleware:5584
@@ -165,6 +165,21 @@ services:
       - REDUCER_SINK_ENDPOINT=tcp://2_sink:5568
       - SPAWNER_SINK_ENDPOINT=tcp://2_sink:5569
 
+  1_sink:
+    build:
+      context: .
+      dockerfile: 1_sink/Dockerfile
+    depends_on:
+      - entry
+      - 1_middleware
+    networks:
+      - 1reducer_1sink
+      - 1sink_entry
+    environment:
+      - ENDPOINT=tcp://*:5587
+      - REDUCER_SPAWNER_ENDPOINT=tcp://*:5588
+      - COLLECTOR_ENDPOINT=tcp://entry:5573
+
   2_sink:
     build:
       context: .
@@ -186,6 +201,8 @@ networks:
   1mapper_1middleware:
   1middleware_1reducer:
   1mapper_1reducer:
+  1reducer_1sink:
+  1sink_entry:
   entry_2ventilator:
   2ventilator_2mapper:
   2mapper_2middleware:
