@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: entry_point/Dockerfile
     networks:
+      - 1sink_entry
       - 2sink_entry
       - entry_2ventilator
       - entry_1ventilator
