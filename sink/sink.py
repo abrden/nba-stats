@@ -1,4 +1,5 @@
 import logging
+import pickle
 
 import zmq
 
@@ -12,7 +13,8 @@ class DataSink:
             self.server.bind(endpoint)
 
         def receive_reducer_result(self):
-            return self.server.recv()
+            b_data = self.server.recv()
+            return pickle.loads(b_data)
 
     class ReducerSpawnerConnection:
         def __init__(self, endpoint):
@@ -25,12 +27,16 @@ class DataSink:
 
     class CollectorConnection:
         def __init__(self, endpoint):
+            self.logger = logging.getLogger("CollectorConnection")
+
             context = zmq.Context()
             self.client = context.socket(zmq.PUSH)
             self.client.connect(endpoint)
 
         def send_result(self, result):
-            self.client.send_string(str(result))
+            r = str(result)
+            self.logger.debug("Sending final result to collector: %r", r)
+            self.client.send_string(r)
 
     def __init__(self, endpoint, collector_endpoint):
         self.logger = logging.getLogger("DataSink")

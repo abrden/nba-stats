@@ -8,7 +8,8 @@ WORKDIR /2_ventilator_bundle
 RUN pip3 install zmq
 
 COPY ./NBA-shot-log  /2_ventilator_bundle/NBA-shot-log
-COPY ./ventilator /2_ventilator_bundle/2_ventilator
+COPY ./2_ventilator /2_ventilator_bundle/2_ventilator
+COPY ./ventilator /2_ventilator_bundle/ventilator
 
 ENTRYPOINT [ "python3" ]
 

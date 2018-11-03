@@ -40,7 +40,7 @@ class DataVentilator:
             self.client.connect(endpoint)
 
             # Send something to indicate I'm already connected
-            self.client.send_string("2")
+            self.client.send_string("READY")
 
         def wait_for_start_signal(self):
             self.client.recv()
@@ -55,8 +55,8 @@ class DataVentilator:
         self.entry_conn = None
 
     def start(self, dataset_dir):
-        self.mappers_conn = self.MappersConnection(self.mappers, self.ventilator_endpoint, self.mappers_ready_endpoint)
         self.entry_conn = self.EntryConnection(self.entry_signal_endpoint)
+        self.mappers_conn = self.MappersConnection(self.mappers, self.ventilator_endpoint, self.mappers_ready_endpoint)
 
         self.logger.debug("Waiting for entry point start signal")
         self.entry_conn.wait_for_start_signal()

@@ -1,4 +1,5 @@
 import logging
+import pickle
 
 import zmq
 
@@ -24,16 +25,19 @@ class Middleware:
             self.server.bind(endpoint)
 
         def receive_mapper_pair(self):
-            message = self.server.recv_multipart()  # FIXME why do I have to recv a multipart if mapper sent me a string
-            self.logger.debug("Multipart received %r", message)
-            return message[3]
+            b_message = self.server.recv_multipart()  # FIXME why do I have to recv a multipart if mapper sent me a string
+            message = pickle.loads(b_message[3])
+            self.logger.debug("Pyobj received %r", message)
+            return message
 
         def send_value_to_reducer(self, key, value):
-            self.server.send_multipart([key, value])
+            b_key = str(key).encode()
+            b_value = pickle.dumps(value, -1)
+            self.server.send_multipart([b_key, b_value])
 
         def close_conn_with_reducers(self, reducers):
             for key in reducers:
-                self.server.send_multipart([key, b'END'])
+                self.send_value_to_reducer(key, "END")
 
     def __init__(self, mappers, endpoint, reducer_spawner_endpoint):
         self.logger = logging.getLogger("Middleware")
@@ -66,7 +70,7 @@ class Middleware:
                 else:
                     continue
 
-            key, value = message.split('#'.encode())
+            key, value = message
 
             if key not in keys:
                 keys[key] = True

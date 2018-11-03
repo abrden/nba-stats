@@ -1,5 +1,6 @@
 import os
 import logging
+from multiprocessing import Pool
 
 from sink.sink import DataSink
 
@@ -10,12 +11,22 @@ reducer_spawner_endpoint = os.environ['REDUCER_SPAWNER_ENDPOINT']
 collector_endpoint = os.environ['COLLECTOR_ENDPOINT']
 
 
+def format_result(result):
+    teams, scores = result
+    return teams[2:12], teams[16:19], scores[1], teams[23:26], scores[2]
+
+
 def collect_fun(results):
     '''
-    Takes a list of pairs (player_name, overall_points) and returns a list of the 10 players with most points achieved.
+    Takes a list of pairs ("(date, local_team, away_team)", {1: local_total, away_total}).
+    Returns a list of tuples (date, local_team, local_total, away_team, away_total).
     '''
-    results.sort(key=lambda x: -x[1])
-    return results[:10]
+    logger = logging.getLogger("collect_fun")
+    logger.debug("results %r", results)
+    pool = Pool()
+    decoded_results = pool.map(format_result, results)
+    logger.debug("decoded results %r", decoded_results)
+    return decoded_results
 
 
 def main():

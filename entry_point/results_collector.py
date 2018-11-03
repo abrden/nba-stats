@@ -24,7 +24,7 @@ class ResultsCollector:
         self.sinks_conn = self.SinksConnection(self.endpoint)
 
         results = []
-        for _ in range(1):  # TODO receive the results of all operations
+        for _ in range(2):  # TODO receive the results of all operations
             self.logger.debug("Receiving result")
             result = self.sinks_conn.receive_result()
             self.logger.debug("Result received: %r", result)
