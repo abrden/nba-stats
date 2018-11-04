@@ -61,9 +61,9 @@ services:
       dockerfile: 32_ventilator/Dockerfile
     depends_on:
       - entry
-      #- 32_middleware
+      - 32_middleware
       #- 32_sink
-      #- 32_reducer
+      - 32_reducer
     networks:
       - entry_32ventilator
       - 32ventilator_32mapper
@@ -120,13 +120,13 @@ services:
       dockerfile: 32_mapper/Dockerfile
     depends_on:
       - entry
-      #- 32_middleware
+      - 32_middleware
       #- 32_sink
-      #- 32_reducer
+      - 32_reducer
       - 32_ventilator
     networks:
-      #- 32mapper_32middleware
-      #- 32mapper_32reducer
+      - 32mapper_32middleware
+      - 32mapper_32reducer
       - 32ventilator_32mapper
     environment:
       - MW_ENDPOINT=tcp://32_middleware:5592
@@ -161,6 +161,20 @@ services:
       - MAPPERS=2
       - ENDPOINT=tcp://*:5559
       - REDUCER_SPAWNER_ENDPOINT=tcp://*:5561
+
+  32_middleware:
+      build:
+        context: .
+        dockerfile: 32_middleware/Dockerfile
+      depends_on:
+        - entry
+      networks:
+        - 32mapper_32middleware
+        - 32middleware_32reducer
+      environment:
+        - MAPPERS=2
+        - ENDPOINT=tcp://*:5592
+        - REDUCER_SPAWNER_ENDPOINT=tcp://*:5594
 
   1_reducer:
     build:
@@ -205,6 +219,28 @@ services:
       - REDUCER_REDUCERS_READY_ENDPOINT=tcp://2_reducer:5564
       - REDUCER_SINK_ENDPOINT=tcp://2_sink:5568
       - SPAWNER_SINK_ENDPOINT=tcp://2_sink:5569
+
+  32_reducer:
+    build:
+      context: .
+      dockerfile: 32_reducer/Dockerfile
+    depends_on:
+      - entry
+      - 32_middleware
+      #- 32_sink
+    networks:
+      - 32middleware_32reducer
+      - 32mapper_32reducer
+      - 32reducer_32sink
+    environment:
+      - MAPPERS=2
+      - MW_ENDPOINT=tcp://32_middleware:5592
+      - KEY_QUEUE_ENDPOINT=tcp://*:5593
+      - REDUCER_SPAWNER_ENDPOINT=tcp://32_middleware:5594
+      - REDUCERS_READY_ENDPOINT=tcp://*:5595
+      - REDUCER_REDUCERS_READY_ENDPOINT=tcp://32_reducer:5595
+      - REDUCER_SINK_ENDPOINT=tcp://32_sink:5596
+      - SPAWNER_SINK_ENDPOINT=tcp://32_sink:5597
 
   1_sink:
     build:
@@ -253,3 +289,7 @@ networks:
   2sink_entry:
   entry_32ventilator:
   32ventilator_32mapper:
+  32mapper_32middleware:
+  32middleware_32reducer:
+  32reducer_32sink:
+  32mapper_32reducer:
