@@ -10,6 +10,7 @@ services:
       - 2sink_entry
       - entry_2ventilator
       - entry_1ventilator
+      - entry_32ventilator
     environment:
       - VENT1_ENDPOINT=tcp://*:5570
       - VENT2_ENDPOINT=tcp://*:5571
@@ -54,6 +55,25 @@ services:
       - ENDPOINT=tcp://*:5562
       - MAPPERS_READY_ENDPOINT=tcp://*:5563
 
+  32_ventilator:
+    build:
+      context: .
+      dockerfile: 32_ventilator/Dockerfile
+    depends_on:
+      - entry
+      #- 32_middleware
+      #- 32_sink
+      #- 32_reducer
+    networks:
+      - entry_32ventilator
+      - 32ventilator_32mapper
+    environment:
+      - MAPPERS=2
+      - DATASET_DIR=NBA-shot-log
+      - ENTRY_ENDPOINT=tcp://entry:5572
+      - ENDPOINT=tcp://*:5590
+      - MAPPERS_READY_ENDPOINT=tcp://*:5591
+
   1_mapper:
     build:
       context: .
@@ -93,6 +113,26 @@ services:
       - KEYS_ENDPOINT=tcp://2_reducer:5560
       - VENTILATOR_ENDPOINT=tcp://2_ventilator:5562
       - MAPPERS_READY_ENDPOINT=tcp://2_ventilator:5563
+
+  32_mapper:
+    build:
+      context: .
+      dockerfile: 32_mapper/Dockerfile
+    depends_on:
+      - entry
+      #- 32_middleware
+      #- 32_sink
+      #- 32_reducer
+      - 32_ventilator
+    networks:
+      #- 32mapper_32middleware
+      #- 32mapper_32reducer
+      - 32ventilator_32mapper
+    environment:
+      - MW_ENDPOINT=tcp://32_middleware:5592
+      - KEYS_ENDPOINT=tcp://32_reducer:5593
+      - VENTILATOR_ENDPOINT=tcp://32_ventilator:5590
+      - MAPPERS_READY_ENDPOINT=tcp://32_ventilator:5591
 
   1_middleware:
     build:
@@ -211,3 +251,5 @@ networks:
   2middleware_2reducer:
   2reducer_2sink:
   2sink_entry:
+  entry_32ventilator:
+  32ventilator_32mapper:

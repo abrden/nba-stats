@@ -24,14 +24,14 @@ class Trigger:
             self.logger.debug("Waiting for ventilator 1")
             self.server_1.recv()
             self.logger.debug("Ventilator 1 ready. Waiting for ventilator 2")
-            msg = self.server_2.recv()
-            #self.logger.debug("Ventilator 1 and 2 ready. Waiting for ventilator 3") TODO uncomment when implemented
-            #self.server_3.recv()
+            self.server_2.recv()
+            self.logger.debug("Ventilator 1 and 2 ready. Waiting for ventilator 3")
+            self.server_3.recv()
 
         def signal_ventilators(self):
             self.server_1.send_string("START")
             self.server_2.send_string("START")
-            #self.server_3.send_string("START")
+            self.server_3.send_string("START")
 
     def __init__(self, ventilator_endpoint_1, ventilator_endpoint_2, ventilator_endpoint_3):
         self.logger = logging.getLogger("Trigger")
