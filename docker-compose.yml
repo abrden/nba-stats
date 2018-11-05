@@ -8,6 +8,7 @@ services:
     networks:
       - 1sink_entry
       - 2sink_entry
+      - 32sink_entry
       - entry_2ventilator
       - entry_1ventilator
       - entry_32ventilator
@@ -62,7 +63,7 @@ services:
     depends_on:
       - entry
       - 32_middleware
-      #- 32_sink
+      - 32_sink
       - 32_reducer
     networks:
       - entry_32ventilator
@@ -121,7 +122,7 @@ services:
     depends_on:
       - entry
       - 32_middleware
-      #- 32_sink
+      - 32_sink
       - 32_reducer
       - 32_ventilator
     networks:
@@ -227,7 +228,7 @@ services:
     depends_on:
       - entry
       - 32_middleware
-      #- 32_sink
+      - 32_sink
     networks:
       - 32middleware_32reducer
       - 32mapper_32reducer
@@ -272,6 +273,21 @@ services:
       - REDUCER_SPAWNER_ENDPOINT=tcp://*:5569
       - COLLECTOR_ENDPOINT=tcp://entry:5573
 
+  32_sink:
+    build:
+      context: .
+      dockerfile: 32_sink/Dockerfile
+    depends_on:
+      - entry
+      - 32_middleware
+    networks:
+      - 32reducer_32sink
+      - 32sink_entry
+    environment:
+      - ENDPOINT=tcp://*:5596
+      - REDUCER_SPAWNER_ENDPOINT=tcp://*:5597
+      - COLLECTOR_ENDPOINT=tcp://entry:5573
+
 networks:
   entry_1ventilator:
   1ventilator_1mapper:
@@ -293,3 +309,4 @@ networks:
   32middleware_32reducer:
   32reducer_32sink:
   32mapper_32reducer:
+  32sink_entry:
