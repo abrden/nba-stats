@@ -33,10 +33,10 @@ class DataSink:
             self.client = context.socket(zmq.PUSH)
             self.client.connect(endpoint)
 
-        def send_result(self, result):
-            r = str(result)
-            self.logger.debug("Sending final result to collector: %r", r)
-            self.client.send_string(r)
+        def send_result(self, id, result):
+            self.logger.debug("Sending final result to collector: %r", result)
+            b_result = pickle.dumps((id, result), -1)
+            self.client.send(b_result)
 
     def __init__(self, endpoint, collector_endpoint):
         self.logger = logging.getLogger("DataSink")
@@ -45,7 +45,7 @@ class DataSink:
         self.reducers_conn = None
         self.collector_conn = None
 
-    def start(self, reducer_spawner_endpoint, fun):
+    def start(self, reducer_spawner_endpoint, fun, id):
         self.reducers_conn = self.ReducersConnection(self.endpoint)
         self.collector_conn = self.CollectorConnection(self.collector_endpoint)
 
@@ -71,4 +71,4 @@ class DataSink:
 
         ans = fun(results)
 
-        self.collector_conn.send_result(ans)
+        self.collector_conn.send_result(id, ans)

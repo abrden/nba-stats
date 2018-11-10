@@ -22,7 +22,7 @@ def main():
     logger = logging.getLogger("Sink")
     logger.debug("Start")
     sink = DataSink(endpoint, collector_endpoint)
-    sink.start(reducer_spawner_endpoint, collect_fun)
+    sink.start(reducer_spawner_endpoint, collect_fun, 2)
     logger.debug("End")
 
 

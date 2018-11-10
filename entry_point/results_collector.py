@@ -1,4 +1,5 @@
 import logging
+import pickle
 
 import zmq
 
@@ -12,7 +13,9 @@ class ResultsCollector:
             self.server.bind(endpoint)
 
         def receive_result(self):
-            return self.server.recv()
+            b_result = self.server.recv()
+            result = pickle.loads(b_result)
+            return result
 
     def __init__(self, endpoint):
         self.logger = logging.getLogger("ResultsCollector")
@@ -23,11 +26,12 @@ class ResultsCollector:
     def start(self):
         self.sinks_conn = self.SinksConnection(self.endpoint)
 
-        results = []
+        results = {}
         for _ in range(3):  # TODO receive the results of all operations
             self.logger.debug("Receiving result")
             result = self.sinks_conn.receive_result()
             self.logger.debug("Result received: %r", result)
-            results.append(result)
+            id, result = result
+            results[id] = result
 
         return results

@@ -20,7 +20,10 @@ def main():
     t.start()
     c = ResultsCollector(endpoint)
     results = c.start()
-    logger.debug("The results are: %r", results)
+    logger.debug("\nPuntaje final para cada partido:\n%r\nLos 10 mejores goleadores:\n%r\nEstadisticas sobre el equipo local (tiros acertados):\n%r\n",
+                 results[1],
+                 results[2],
+                 results[32])
     logger.debug("End")
 
 
