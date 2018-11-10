@@ -12,6 +12,7 @@ services:
       - entry_2ventilator
       - entry_1ventilator
       - entry_32ventilator
+      - 1net
       - 2net
       - 32net
     environment:
@@ -30,8 +31,7 @@ services:
       - 1_sink
       - 1_reducer
     networks:
-      - entry_1ventilator
-      - 1ventilator_1mapper
+      - 1net
     environment:
       - MAPPERS=2
       - DATASET_DIR=NBA-shot-log
@@ -86,9 +86,7 @@ services:
       - 1_reducer
       - 1_ventilator
     networks:
-      - 1mapper_1middleware
-      - 1mapper_1reducerspawner
-      - 1ventilator_1mapper
+      - 1net
     environment:
       - MW_ENDPOINT=tcp://1_middleware:5584
       - KEYS_ENDPOINT=tcp://1_reducerspawner:5583
@@ -138,8 +136,7 @@ services:
     depends_on:
       - entry
     networks:
-      - 1mapper_1middleware
-      - 1middleware_1reducer
+      - 1net
     environment:
       - MAPPERS=2
       - REDUCERS=2
@@ -184,9 +181,7 @@ services:
         - 1_sink
         - 1_reducerspawner
       networks:
-        - 1middleware_1reducer
-        - 1reducerspawner_1reducer
-        - 1reducer_1sink
+        - 1net
       environment:
         - MW_ENDPOINT=tcp://1_middleware:5584
         - REDUCER_MW_READY_ENDPOINT=tcp://1_middleware:5585
@@ -203,10 +198,7 @@ services:
       - 1_middleware
       - 1_sink
     networks:
-      - 1middleware_1reducerspawner
-      - 1reducerspawner_1reducer
-      - 1mapper_1reducerspawner
-      - 1reducerspawner_1sink
+      - 1net
     environment:
       - MAPPERS=2
       - REDUCERS=2
@@ -295,9 +287,7 @@ services:
       - entry
       - 1_middleware
     networks:
-      - 1reducer_1sink
-      - 1reducerspawner_1sink
-      - 1sink_entry
+      - 1net
     environment:
       - ENDPOINT=tcp://*:5587
       - REDUCER_SPAWNER_ENDPOINT=tcp://*:5588
@@ -333,10 +323,10 @@ services:
 
 networks:
   entry_1ventilator:
-  1ventilator_1mapper:
-  1mapper_1middleware:
-  1middleware_1reducer:
-  1reducer_1sink:
+  #1ventilator_1mapper:
+  #1mapper_1middleware:
+  #1middleware_1reducer:
+  #1reducer_1sink:
   1sink_entry:
   entry_2ventilator:
   #2ventilator_2mapper:
@@ -351,16 +341,17 @@ networks:
   #32reducer_32sink:
   32sink_entry:
 
-  1middleware_1reducerspawner:
-  1reducerspawner_1reducer:
-  1mapper_1reducerspawner:
-  1reducerspawner_1sink:
+  #1middleware_1reducerspawner:
+  #1reducerspawner_1reducer:
+  #1mapper_1reducerspawner:
+  #1reducerspawner_1sink:
 
   #2middleware_2reducerspawner:
   #2reducerspawner_2reducer:
   #2mapper_2reducerspawner:
   #2reducerspawner_2sink:
 
+  1net:
   2net:
   32net:
   #32middleware_32reducerspawner:
