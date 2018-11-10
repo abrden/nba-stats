@@ -1,7 +1,7 @@
 import os
 import logging
 
-from .reducer_spawner import ReducerSpawner
+from reducer_handler.reducer_handler import ReducerHandler
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 
@@ -17,7 +17,7 @@ spawner_sink_endpoint = os.environ['SPAWNER_SINK_ENDPOINT']
 def main():
     logger = logging.getLogger("ReducerSpawner")
     logger.debug("Start")
-    spawner = ReducerSpawner(mappers, reducers, key_queue_endpoint, keys_to_reducers_endpoint, reducers_ready_endpoint, spawner_sink_endpoint)
+    spawner = ReducerHandler(mappers, reducers, key_queue_endpoint, keys_to_reducers_endpoint, reducers_ready_endpoint, spawner_sink_endpoint)
     spawner.start()
     logger.debug("End")
 

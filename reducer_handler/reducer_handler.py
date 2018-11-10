@@ -3,7 +3,7 @@ import logging
 import zmq
 
 
-class ReducerSpawner:
+class ReducerHandler:
 
     class MappersConnection:
         def __init__(self, key_queue_endpoint):
@@ -91,5 +91,5 @@ class ReducerSpawner:
         self.logger.debug("The keys received were: %r", self.reducers_keys.keys())
         self.reducers_conn.close()
 
-        self.logger.debug("Sending reducers quantity to Sink")
+        self.logger.debug("Sending keys quantity to Sink")
         self.sink_conn.notify_reducers_quantity(len(self.reducers_keys))

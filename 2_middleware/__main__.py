@@ -5,16 +5,16 @@ from middleware.middleware import Middleware
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 
-N = int(os.environ['MAPPERS'])  # Mappers quantity
-
+mappers = int(os.environ['MAPPERS'])
+reducers = int(os.environ['REDUCERS'])
 endpoint = os.environ['ENDPOINT']
-reducer_spawner_endpoint = os.environ['REDUCER_SPAWNER_ENDPOINT']
+reducer_ready_endpoint = os.environ['REDUCER_READY_ENDPOINT']
 
 
 def main():
     logger = logging.getLogger("Middleware")
     logger.debug("Start")
-    mw = Middleware(N, endpoint, reducer_spawner_endpoint)
+    mw = Middleware(mappers, reducers, endpoint, reducer_ready_endpoint)
     mw.start()
     logger.debug("End")
 
