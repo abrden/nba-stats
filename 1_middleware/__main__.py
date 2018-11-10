@@ -1,7 +1,7 @@
 import os
 import logging
 
-from .middleware import Middleware
+from middleware.middleware import Middleware
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 

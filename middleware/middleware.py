@@ -6,15 +6,20 @@ import zmq
 
 class Middleware:
 
-    class ReducerSpawnerConnection:
-        def __init__(self, reducer_spawner_endpoint):
+    class ReducersConnection:
+        def __init__(self, reducers_ready_endpoint, reducers):
+            self.logger = logging.getLogger("ReducersConnection")
+            self.reducers = reducers
+
             context = zmq.Context()
 
-            self.client = context.socket(zmq.REP)
-            self.client.bind(reducer_spawner_endpoint)
+            self.client = context.socket(zmq.PULL)
+            self.client.bind(reducers_ready_endpoint)
 
         def wait_for_reducers_to_connect(self):
-            self.client.recv()
+            for _ in range(self.reducers):
+                self.client.recv()
+                self.logger.debug("Reducer ACK received")
 
     class Connection:
         def __init__(self, endpoint):
@@ -39,21 +44,22 @@ class Middleware:
             for key in reducers:
                 self.send_value_to_reducer(key, "END")
 
-    def __init__(self, mappers, endpoint, reducer_spawner_endpoint):
+    def __init__(self, mappers, reducers, endpoint, reducer_ready_endpoint):
         self.logger = logging.getLogger("Middleware")
 
         self.mappers = mappers
+        self.reducers = reducers
         self.endpoint = endpoint
-        self.reducer_spawner_endpoint = reducer_spawner_endpoint
-        self.reducer_spawner_conn = None
+        self.reducer_ready_endpoint = reducer_ready_endpoint
+        self.reducers_conn = None
         self.conn = None
 
     def start(self):
-        self.reducer_spawner_conn = self.ReducerSpawnerConnection(self.reducer_spawner_endpoint)
+        self.reducers_conn = self.ReducersConnection(self.reducer_ready_endpoint, self.reducers)
         self.conn = self.Connection(self.endpoint)
 
         self.logger.debug("Waiting for reducer spawner signal")
-        self.reducer_spawner_conn.wait_for_reducers_to_connect()
+        self.reducers_conn.wait_for_reducers_to_connect()
         self.logger.debug("Signal received, sending data to reducers")
 
         keys = {}
