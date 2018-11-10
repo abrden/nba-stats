@@ -6,12 +6,6 @@ services:
       context: .
       dockerfile: entry_point/Dockerfile
     networks:
-      - 1sink_entry
-      - 2sink_entry
-      - 32sink_entry
-      - entry_2ventilator
-      - entry_1ventilator
-      - entry_32ventilator
       - 1net
       - 2net
       - 32net
@@ -158,36 +152,36 @@ services:
       - REDUCER_READY_ENDPOINT=tcp://*:5561
 
   32_middleware:
-      build:
-        context: .
-        dockerfile: 32_middleware/Dockerfile
-      depends_on:
-        - entry
-      networks:
-        - 32net
-      environment:
-        - MAPPERS=2
-        - REDUCERS=2
-        - ENDPOINT=tcp://*:5592
-        - REDUCER_READY_ENDPOINT=tcp://*:5594
+    build:
+      context: .
+      dockerfile: 32_middleware/Dockerfile
+    depends_on:
+      - entry
+    networks:
+      - 32net
+    environment:
+      - MAPPERS=2
+      - REDUCERS=2
+      - ENDPOINT=tcp://*:5592
+      - REDUCER_READY_ENDPOINT=tcp://*:5594
 
   1_reducer:
-      build:
-        context: .
-        dockerfile: 1_reducer/Dockerfile
-      depends_on:
-        - entry
-        - 1_middleware
-        - 1_sink
-        - 1_reducerspawner
-      networks:
+    build:
+      context: .
+      dockerfile: 1_reducer/Dockerfile
+    depends_on:
+      - entry
+      - 1_middleware
+      - 1_sink
+      - 1_reducerspawner
+    networks:
         - 1net
-      environment:
-        - MW_ENDPOINT=tcp://1_middleware:5584
-        - REDUCER_MW_READY_ENDPOINT=tcp://1_middleware:5585
-        - REDUCER_HANDLER_READY_ENDPOINT=tcp://1_reducerspawner:5586
-        - SINK_ENDPOINT=tcp://1_sink:5587
-        - KEYS_ENDPOINT=tcp://1_reducerspawner:5600
+    environment:
+      - MW_ENDPOINT=tcp://1_middleware:5584
+      - REDUCER_MW_READY_ENDPOINT=tcp://1_middleware:5585
+      - REDUCER_HANDLER_READY_ENDPOINT=tcp://1_reducerspawner:5586
+      - SINK_ENDPOINT=tcp://1_sink:5587
+      - KEYS_ENDPOINT=tcp://1_reducerspawner:5600
 
   1_reducerspawner:
     build:
@@ -208,22 +202,22 @@ services:
       - SPAWNER_SINK_ENDPOINT=tcp://1_sink:5588
 
   2_reducer:
-      build:
-        context: .
-        dockerfile: 2_reducer/Dockerfile
-      depends_on:
-        - entry
-        - 2_middleware
-        - 2_sink
-        - 2_reducerspawner
-      networks:
-        - 2net
-      environment:
-        - MW_ENDPOINT=tcp://2_middleware:5559
-        - REDUCER_MW_READY_ENDPOINT=tcp://2_middleware:5561
-        - REDUCER_HANDLER_READY_ENDPOINT=tcp://2_reducerspawner:5564
-        - SINK_ENDPOINT=tcp://2_sink:5568
-        - KEYS_ENDPOINT=tcp://2_reducerspawner:5601
+    build:
+      context: .
+      dockerfile: 2_reducer/Dockerfile
+    depends_on:
+      - entry
+      - 2_middleware
+      - 2_sink
+      - 2_reducerspawner
+    networks:
+      - 2net
+    environment:
+      - MW_ENDPOINT=tcp://2_middleware:5559
+      - REDUCER_MW_READY_ENDPOINT=tcp://2_middleware:5561
+      - REDUCER_HANDLER_READY_ENDPOINT=tcp://2_reducerspawner:5564
+      - SINK_ENDPOINT=tcp://2_sink:5568
+      - KEYS_ENDPOINT=tcp://2_reducerspawner:5601
 
   2_reducerspawner:
     build:
@@ -244,22 +238,22 @@ services:
       - SPAWNER_SINK_ENDPOINT=tcp://2_sink:5569
 
   32_reducer:
-      build:
-        context: .
-        dockerfile: 32_reducer/Dockerfile
-      depends_on:
-        - entry
-        - 32_middleware
-        - 32_sink
-        - 32_reducerspawner
-      networks:
-        - 32net
-      environment:
-        - MW_ENDPOINT=tcp://32_middleware:5592
-        - REDUCER_MW_READY_ENDPOINT=tcp://32_middleware:5594
-        - REDUCER_HANDLER_READY_ENDPOINT=tcp://32_reducerspawner:5595
-        - SINK_ENDPOINT=tcp://32_sink:5596
-        - KEYS_ENDPOINT=tcp://32_reducerspawner:5602
+    build:
+      context: .
+      dockerfile: 32_reducer/Dockerfile
+    depends_on:
+      - entry
+      - 32_middleware
+      - 32_sink
+      - 32_reducerspawner
+    networks:
+      - 32net
+    environment:
+      - MW_ENDPOINT=tcp://32_middleware:5592
+      - REDUCER_MW_READY_ENDPOINT=tcp://32_middleware:5594
+      - REDUCER_HANDLER_READY_ENDPOINT=tcp://32_reducerspawner:5595
+      - SINK_ENDPOINT=tcp://32_sink:5596
+      - KEYS_ENDPOINT=tcp://32_reducerspawner:5602
 
   32_reducerspawner:
     build:
@@ -322,39 +316,6 @@ services:
       - COLLECTOR_ENDPOINT=tcp://entry:5573
 
 networks:
-  entry_1ventilator:
-  #1ventilator_1mapper:
-  #1mapper_1middleware:
-  #1middleware_1reducer:
-  #1reducer_1sink:
-  1sink_entry:
-  entry_2ventilator:
-  #2ventilator_2mapper:
-  #2mapper_2middleware:
-  #2middleware_2reducer:
-  #2reducer_2sink:
-  2sink_entry:
-  entry_32ventilator:
-  #32ventilator_32mapper:
-  #32mapper_32middleware:
-  #32middleware_32reducer:
-  #32reducer_32sink:
-  32sink_entry:
-
-  #1middleware_1reducerspawner:
-  #1reducerspawner_1reducer:
-  #1mapper_1reducerspawner:
-  #1reducerspawner_1sink:
-
-  #2middleware_2reducerspawner:
-  #2reducerspawner_2reducer:
-  #2mapper_2reducerspawner:
-  #2reducerspawner_2sink:
-
   1net:
   2net:
   32net:
-  #32middleware_32reducerspawner:
-  #32reducerspawner_32reducer:
-  #32mapper_32reducerspawner:
-  #32reducerspawner_32sink:
