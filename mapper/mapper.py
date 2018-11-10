@@ -44,7 +44,6 @@ class Mapper:
             return self.mw_socket.send(b_data)
 
     def __init__(self, mw_endpoint, key_queue_endpoint, ventilator_endpoint, mappers_ready_endpoint):
-        super().__init__()
         self.logger = logging.getLogger("Mapper")
         self.mw_endpoint = mw_endpoint
         self.key_queue_endpoint = key_queue_endpoint
