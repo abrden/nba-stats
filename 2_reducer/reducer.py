@@ -98,6 +98,7 @@ class Reducer:
         self.mw.signal_ready()
 
         self.logger.debug("Working with values")
+        ends_received = 0
         while True:
             self.logger.debug("Receiving")
             pairs = self.mw.receive()
@@ -108,7 +109,9 @@ class Reducer:
                 finished = request[1] == "END"
                 if finished:
                     self.logger.debug("MW END received")
-                    end = True
+                    ends_received += 1
+                    if ends_received == len(acc):  # acc dict initializes with all the keys assigned to this reducer
+                        end = True
                     continue
 
                 key, value = request
