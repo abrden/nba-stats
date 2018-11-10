@@ -3,7 +3,7 @@ import logging
 import zmq
 
 
-class ReducerSpawner:
+class ReducerHandler:
 
     class MappersConnection:
         def __init__(self, key_queue_endpoint):
