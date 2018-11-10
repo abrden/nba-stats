@@ -8,7 +8,7 @@ WORKDIR /32_reducerspawner_bundle
 RUN pip3 install zmq
 
 COPY ./32_reducerspawner /32_reducerspawner_bundle/32_reducerspawner
-COPY ./reducer /32_reducerspawner_bundle/reducer
+COPY ./reducer_spawner /32_reducerspawner_bundle/reducer_spawner
 
 ENTRYPOINT [ "python3" ]
 
