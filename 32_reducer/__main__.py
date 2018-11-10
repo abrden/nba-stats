@@ -14,14 +14,18 @@ keys_endpoint = os.environ['KEYS_ENDPOINT']
 
 def fun(acc, req):
     '''
-    Takes the accumulated scored points of the teams and the new points scored by a team.
-    Returns the accumulated points of the team.
+    Takes the accumulated shots scored and the shots total, and a tuple (points, scored_bool)
     '''
-    points = req  # Tuple (team_index, new_points)
+    POINTS_INDEX = 0
+    SCORED_INDEX = 1
     if acc is None:
-        acc = {1: 0, 2: 0}
+        acc = {2: (0, 0), 3: (0, 0)}
 
-    acc[points[0]] += points[1]
+    scored_points = acc[req[POINTS_INDEX]][0]
+    if req[SCORED_INDEX]:
+        scored_points += 1
+
+    acc[req[POINTS_INDEX]] = (scored_points, acc[req[POINTS_INDEX]][1] + 1)
     return acc
 
 
