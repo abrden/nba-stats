@@ -42,6 +42,7 @@ class Middleware:
 
         def close_conn_with_reducers(self, reducers):
             for key in reducers:
+                self.logger.debug("Sending END for key %r", key)
                 self.send_value_to_reducer(key, "END")
 
     def __init__(self, mappers, reducers, endpoint, reducer_ready_endpoint):
@@ -88,3 +89,6 @@ class Middleware:
 
         self.logger.debug("Sending END to reducers")
         self.conn.close_conn_with_reducers(keys)
+
+        import time
+        time.sleep(10)  # FIXME
