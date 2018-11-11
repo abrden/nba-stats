@@ -27,11 +27,13 @@ def map_fun(task):
     shot_log = task.decode().rstrip().split(",")
     if shot_log[SHOT_OUTCOME_INDEX] == "SCORED":
 
-        index_of_team_that_scored = 0
+        index_of_team_that_scored = 0  # ans tuple index of the team that scored (Starting at 1 bc date is at index 0)
         if shot_log[HOME_TEAM_INDEX] == 'Yes':
             index_of_team_that_scored = 1
         elif shot_log[HOME_TEAM_INDEX] == 'No':
             index_of_team_that_scored = 2
+        else:
+            return None
 
         ans = (shot_log[DATE_INDEX], shot_log[LOCAL_TEAM_INDEX], shot_log[AWAY_TEAM_INDEX]), (index_of_team_that_scored, int(shot_log[POINTS_INDEX]))
         key, value = ans
