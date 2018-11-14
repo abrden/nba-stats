@@ -132,15 +132,15 @@ services:
       dockerfile: 31_mapper/Dockerfile
     depends_on:
       - entry
-      #- 31_middleware
+      - 31_middleware
       #- 31_sink
-      #- 31_reducer
+      - 31_reducer
       - 31_shotlogdispatcher
     networks:
       - 31net
     environment:
-      - MW_ENDPOINT=tcp://31_middleware:5584 # Change
-      - KEYS_ENDPOINT=tcp://31_reducerhandler:5583 # Change
+      - MW_ENDPOINT=tcp://31_middleware:5705
+      - KEYS_ENDPOINT=tcp://31_reducerhandler:5709
       - VENTILATOR_ENDPOINT=tcp://31_shotlogdispatcher:5701
       - MAPPERS_READY_ENDPOINT=tcp://31_shotlogdispatcher:5702
 
@@ -189,6 +189,21 @@ services:
       - REDUCERS=2
       - ENDPOINT=tcp://*:5559
       - REDUCER_READY_ENDPOINT=tcp://*:5561
+
+  31_middleware:
+    build:
+      context: .
+      dockerfile: 31_middleware/Dockerfile
+    depends_on:
+      - entry
+      - 1_sink
+    networks:
+      - 31net
+    environment:
+      - MAPPERS=2
+      - REDUCERS=2
+      - ENDPOINT=tcp://*:5705
+      - REDUCER_READY_ENDPOINT=tcp://*:5706
 
   32_middleware:
     build:
@@ -275,6 +290,42 @@ services:
       - KEYS_REDUCERS_ENDPOINT=tcp://*:5601
       - REDUCERS_READY_ENDPOINT=tcp://*:5564
       - SPAWNER_SINK_ENDPOINT=tcp://2_sink:5569
+
+  31_reducer:
+    build:
+      context: .
+      dockerfile: 31_reducer/Dockerfile
+    depends_on:
+      - entry
+      - 31_middleware
+      #- 31_sink
+      - 31_reducerhandler
+    networks:
+        - 31net
+    environment:
+      - MW_ENDPOINT=tcp://31_middleware:5705 #
+      - REDUCER_MW_READY_ENDPOINT=tcp://31_middleware:5706 #
+      - REDUCER_HANDLER_READY_ENDPOINT=tcp://31_reducerhandler:5708 #
+      - SINK_ENDPOINT=tcp://31_sink:5587
+      - KEYS_ENDPOINT=tcp://31_reducerhandler:5710 #
+
+  31_reducerhandler:
+    build:
+      context: .
+      dockerfile: 31_reducerhandler/Dockerfile
+    depends_on:
+      - entry
+      - 31_middleware
+      #- 31_sink
+    networks:
+      - 31net
+    environment:
+      - MAPPERS=2
+      - REDUCERS=2
+      - KEY_QUEUE_ENDPOINT=tcp://*:5709 #
+      - KEYS_REDUCERS_ENDPOINT=tcp://*:5710 #
+      - REDUCERS_READY_ENDPOINT=tcp://*:5708 #
+      - SPAWNER_SINK_ENDPOINT=tcp://31_sink:5588
 
   32_reducer:
     build:
