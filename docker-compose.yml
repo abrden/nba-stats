@@ -14,11 +14,13 @@ services:
       - VENT2_ENDPOINT=tcp://*:5571
       - VENT3_ENDPOINT=tcp://*:5572
       - ENDPOINT=tcp://*:5573
+      - DATASET_DIR=NBA-shot-log
+      - DISPATCHER_READY_ENDPOINT=tcp://*:5700
 
-  1_ventilator:
+  1_shotlogdispatcher:
     build:
       context: .
-      dockerfile: 1_ventilator/Dockerfile
+      dockerfile: 1_shotlogdispatcher/Dockerfile
     depends_on:
       - entry
       - 1_middleware
@@ -28,15 +30,15 @@ services:
       - 1net
     environment:
       - MAPPERS=2
-      - DATASET_DIR=NBA-shot-log
       - ENTRY_ENDPOINT=tcp://entry:5570
       - ENDPOINT=tcp://*:5580
       - MAPPERS_READY_ENDPOINT=tcp://*:5581
+      - DISPATCHER_READY_ENDPOINT=tcp://entry:5700
 
-  2_ventilator:
+  2_shotlogdispatcher:
     build:
       context: .
-      dockerfile: 2_ventilator/Dockerfile
+      dockerfile: 2_shotlogdispatcher/Dockerfile
     depends_on:
       - entry
       - 2_middleware
@@ -46,15 +48,15 @@ services:
       - 2net
     environment:
       - MAPPERS=2
-      - DATASET_DIR=NBA-shot-log
       - ENTRY_ENDPOINT=tcp://entry:5571
       - ENDPOINT=tcp://*:5562
       - MAPPERS_READY_ENDPOINT=tcp://*:5563
+      - DISPATCHER_READY_ENDPOINT=tcp://entry:5700
 
-  32_ventilator:
+  32_shotlogdispatcher:
     build:
       context: .
-      dockerfile: 32_ventilator/Dockerfile
+      dockerfile: 32_shotlogdispatcher/Dockerfile
     depends_on:
       - entry
       - 32_middleware
@@ -64,10 +66,10 @@ services:
       - 32net
     environment:
       - MAPPERS=2
-      - DATASET_DIR=NBA-shot-log
       - ENTRY_ENDPOINT=tcp://entry:5572
       - ENDPOINT=tcp://*:5590
       - MAPPERS_READY_ENDPOINT=tcp://*:5591
+      - DISPATCHER_READY_ENDPOINT=tcp://entry:5700
 
   1_mapper:
     build:
@@ -78,14 +80,14 @@ services:
       - 1_middleware
       - 1_sink
       - 1_reducer
-      - 1_ventilator
+      - 1_shotlogdispatcher
     networks:
       - 1net
     environment:
       - MW_ENDPOINT=tcp://1_middleware:5584
       - KEYS_ENDPOINT=tcp://1_reducerhandler:5583
-      - VENTILATOR_ENDPOINT=tcp://1_ventilator:5580
-      - MAPPERS_READY_ENDPOINT=tcp://1_ventilator:5581
+      - VENTILATOR_ENDPOINT=tcp://1_shotlogdispatcher:5580
+      - MAPPERS_READY_ENDPOINT=tcp://1_shotlogdispatcher:5581
 
   2_mapper:
     build:
@@ -96,14 +98,14 @@ services:
       - 2_middleware
       - 2_sink
       - 2_reducer
-      - 2_ventilator
+      - 2_shotlogdispatcher
     networks:
       - 2net
     environment:
       - MW_ENDPOINT=tcp://2_middleware:5559
       - KEYS_ENDPOINT=tcp://2_reducerhandler:5560
-      - VENTILATOR_ENDPOINT=tcp://2_ventilator:5562
-      - MAPPERS_READY_ENDPOINT=tcp://2_ventilator:5563
+      - VENTILATOR_ENDPOINT=tcp://2_shotlogdispatcher:5562
+      - MAPPERS_READY_ENDPOINT=tcp://2_shotlogdispatcher:5563
 
   32_mapper:
     build:
@@ -114,14 +116,14 @@ services:
       - 32_middleware
       - 32_sink
       - 32_reducer
-      - 32_ventilator
+      - 32_shotlogdispatcher
     networks:
       - 32net
     environment:
       - MW_ENDPOINT=tcp://32_middleware:5592
       - KEYS_ENDPOINT=tcp://32_reducerhandler:5593
-      - VENTILATOR_ENDPOINT=tcp://32_ventilator:5590
-      - MAPPERS_READY_ENDPOINT=tcp://32_ventilator:5591
+      - VENTILATOR_ENDPOINT=tcp://32_shotlogdispatcher:5590
+      - MAPPERS_READY_ENDPOINT=tcp://32_shotlogdispatcher:5591
 
   1_middleware:
     build:

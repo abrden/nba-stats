@@ -2,10 +2,8 @@ import logging
 
 import zmq
 
-from .dataset_handler import DatasetHandler
 
-
-class DataVentilator:
+class DataDispatcher:
 
     class MappersConnection:
         def __init__(self, mappers, ventilator_endpoint, mappers_ready_endpoint):
@@ -26,53 +24,52 @@ class DataVentilator:
                 self.logger.debug("Mapper ACK received: %r", ack)
 
         def send(self, data):
-            self.sender.send_string(data)
+            self.sender.send(data)
 
         def close(self):
             for _ in range(self.mappers):
                 self.sender.send_string("END")
 
     class EntryConnection:
-        def __init__(self, endpoint):
+        def __init__(self, endpoint, dispatcher_ready_endpoint):
             context = zmq.Context()
 
-            self.client = context.socket(zmq.REQ)
+            self.client = context.socket(zmq.PULL)
             self.client.connect(endpoint)
 
+            ready_ack = context.socket(zmq.PUSH)
+            ready_ack.connect(dispatcher_ready_endpoint)
+
             # Send something to indicate I'm already connected
-            self.client.send_string("READY")
+            ready_ack.send_string("READY")
 
-        def wait_for_start_signal(self):
-            self.client.recv()
+        def receive_shotlog(self):
+            return self.client.recv()
 
-    def __init__(self, mappers, ventilator_endpoint, mappers_ready_endpoint, entry_signal_endpoint):
+    def __init__(self, mappers, ventilator_endpoint, dispatcher_ready_endpoint, mappers_ready_endpoint, entry_signal_endpoint):
         self.logger = logging.getLogger("DataVentilator")
         self.mappers = mappers
         self.ventilator_endpoint = ventilator_endpoint
+        self.dispatcher_ready_endpoint = dispatcher_ready_endpoint
         self.mappers_ready_endpoint = mappers_ready_endpoint
         self.entry_signal_endpoint = entry_signal_endpoint
         self.mappers_conn = None
         self.entry_conn = None
 
-    def start(self, dataset_dir):
-        self.entry_conn = self.EntryConnection(self.entry_signal_endpoint)
+    def start(self):
+        self.entry_conn = self.EntryConnection(self.entry_signal_endpoint, self.dispatcher_ready_endpoint)
         self.mappers_conn = self.MappersConnection(self.mappers, self.ventilator_endpoint, self.mappers_ready_endpoint)
 
-        self.logger.debug("Waiting for entry point start signal")
-        self.entry_conn.wait_for_start_signal()
-
         self.logger.debug("Sending data to mappers")
-        set_handler = DatasetHandler(dataset_dir)
+        while True:
+            self.logger.debug("Receiving shotlog")
+            log = self.entry_conn.receive_shotlog()
+            if log == b"END":
+                self.logger.debug("Entry END received")
+                break
+            self.logger.debug("Received shotlog: %r. Sending it to mapper", log)
+            self.mappers_conn.send(log)
+            self.logger.debug("Received shotlog sent to mapper")
 
-        shotlogs = set_handler.get_shotlogs()
-        for log in shotlogs:
-            self.logger.debug("Reading shotlog: %s", log)
-            with open(log, "r") as file:
-                header = file.readline()
-                line = file.readline()
-                while line:
-                    self.logger.debug("Read line: %s", line)
-                    self.mappers_conn.send(line)
-                    line = file.readline()
-
+        self.logger.debug("Sending END to mappers")
         self.mappers_conn.close()

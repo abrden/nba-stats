@@ -59,7 +59,7 @@ class Mapper:
         self.mw = self.MiddlewareConnection(self.mw_endpoint)  # FIXME doesnt work if I initialize it on the constructor
 
         while True:
-            self.logger.debug("Waiting for task from ventilator")
+            self.logger.debug("Waiting for task from shotlog_dispatcher")
             task = self.ventilator_conn.receive_task()
             if task == b"END":
                 self.logger.debug("END received")

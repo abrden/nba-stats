@@ -8,6 +8,7 @@ WORKDIR /ep
 RUN pip3 install zmq
 
 COPY ./entry_point /ep/entry_point
+COPY ./NBA-shot-log  /ep/NBA-shot-log
 
 ENTRYPOINT [ "python3" ]
 
