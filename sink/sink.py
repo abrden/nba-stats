@@ -38,16 +38,43 @@ class DataSink:
             self.logger.debug("Sending final result to collector: %r", r)
             self.client.send_string(r)
 
-    def __init__(self, endpoint, collector_endpoint):
+    class DispatcherConnection:
+        def __init__(self, endpoint, dispatcher_ready_endpoint):
+            self.logger = logging.getLogger("DispatcherConnection")
+
+            context = zmq.Context()
+
+            self.server = context.socket(zmq.PUSH)
+            self.server.bind(endpoint)
+
+            ack_server = context.socket(zmq.PULL)
+            ack_server.bind(dispatcher_ready_endpoint)
+            ack_server.recv()
+            self.logger.debug("Dispatcher ACK received")
+
+        def send_result(self, result):
+            self.logger.debug("Sending result to dispatcher: %r", result)
+            b_result = str(result) #pickle.dumps(result, -1)
+            self.server.send_string(b_result)
+
+        def close(self):
+            self.server.send_string("END")
+
+    def __init__(self, endpoint, collector_endpoint, ventilator_endpoint=None, dispatcher_ready_endpoint=None):
         self.logger = logging.getLogger("DataSink")
         self.endpoint = endpoint
         self.collector_endpoint = collector_endpoint
         self.reducers_conn = None
         self.collector_conn = None
+        self.ventilator_endpoint = ventilator_endpoint
+        self.dispatcher_ready_endpoint = dispatcher_ready_endpoint
+        self.dispatcher_conn = None
 
     def start(self, reducer_spawner_endpoint, fun):
         self.reducers_conn = self.ReducersConnection(self.endpoint)
         self.collector_conn = self.CollectorConnection(self.collector_endpoint)
+        if self.ventilator_endpoint and self.dispatcher_ready_endpoint:
+            self.dispatcher_conn = self.DispatcherConnection(self.ventilator_endpoint, self.dispatcher_ready_endpoint)
 
         reducer_spawner_conn = self.ReducerSpawnerConnection(reducer_spawner_endpoint)
         self.logger.debug("Receiving reducers quantity")
@@ -72,3 +99,8 @@ class DataSink:
         ans = fun(results)
 
         self.collector_conn.send_result(ans)
+
+        if self.dispatcher_conn:
+            for result in ans:
+                self.dispatcher_conn.send_result(result)
+            self.dispatcher_conn.close()

@@ -53,6 +53,25 @@ services:
       - MAPPERS_READY_ENDPOINT=tcp://*:5563
       - DISPATCHER_READY_ENDPOINT=tcp://entry:5700
 
+  31_shotlogdispatcher:
+    build:
+      context: .
+      dockerfile: 31_shotlogdispatcher/Dockerfile
+    depends_on:
+      - entry
+      - 1_sink
+      #- 31_middleware
+      #- 31_sink
+      #- 31_reducer
+    networks:
+      - 31net
+    environment:
+      - MAPPERS=2
+      - ENTRY_ENDPOINT=tcp://1_sink:5703
+      - ENDPOINT=tcp://*:5701
+      - MAPPERS_READY_ENDPOINT=tcp://*:5702
+      - DISPATCHER_READY_ENDPOINT=tcp://1_sink:5704
+
   32_shotlogdispatcher:
     build:
       context: .
@@ -106,6 +125,24 @@ services:
       - KEYS_ENDPOINT=tcp://2_reducerhandler:5560
       - VENTILATOR_ENDPOINT=tcp://2_shotlogdispatcher:5562
       - MAPPERS_READY_ENDPOINT=tcp://2_shotlogdispatcher:5563
+
+  31_mapper:
+    build:
+      context: .
+      dockerfile: 31_mapper/Dockerfile
+    depends_on:
+      - entry
+      #- 31_middleware
+      #- 31_sink
+      #- 31_reducer
+      - 31_shotlogdispatcher
+    networks:
+      - 31net
+    environment:
+      - MW_ENDPOINT=tcp://31_middleware:5584 # Change
+      - KEYS_ENDPOINT=tcp://31_reducerhandler:5583 # Change
+      - VENTILATOR_ENDPOINT=tcp://31_shotlogdispatcher:5701
+      - MAPPERS_READY_ENDPOINT=tcp://31_shotlogdispatcher:5702
 
   32_mapper:
     build:
@@ -284,10 +321,14 @@ services:
       - 1_middleware
     networks:
       - 1net
+      - 31net
     environment:
       - ENDPOINT=tcp://*:5587
       - REDUCER_SPAWNER_ENDPOINT=tcp://*:5588
       - COLLECTOR_ENDPOINT=tcp://entry:5573
+
+      - VENTILATOR_ENDPOINT=tcp://*:5703
+      - DISPATCHER_READY_ENDPOINT=tcp://*:5704
 
   2_sink:
     build:
@@ -320,4 +361,5 @@ services:
 networks:
   1net:
   2net:
+  31net:
   32net:
