@@ -9,6 +9,7 @@ RUN pip3 install zmq
 
 COPY ./32_shotlogdispatcher /32_shotlogdispatcher_bundle/32_shotlogdispatcher
 COPY ./shotlog_dispatcher /32_shotlogdispatcher_bundle/shotlog_dispatcher
+COPY ./middleware /32_shotlogdispatcher_bundle/middleware
 
 ENTRYPOINT [ "python3" ]
 
