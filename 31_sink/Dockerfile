@@ -9,6 +9,7 @@ RUN pip3 install zmq
 
 COPY ./31_sink /31_sink_bundle/31_sink
 COPY ./sink /31_sink_bundle/sink
+COPY ./middleware /31_sink_bundle/middleware
 
 ENTRYPOINT [ "python3" ]
 

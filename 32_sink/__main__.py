@@ -39,8 +39,8 @@ def collect_fun(results):
 def main():
     logger = logging.getLogger("Sink")
     logger.debug("Start")
-    sink = DataSink(endpoint, collector_endpoint)
-    sink.start(reducer_spawner_endpoint, collect_fun)
+    sink = DataSink(endpoint, collector_endpoint, reducer_spawner_endpoint)
+    sink.start(collect_fun)
     logger.debug("End")
 
 

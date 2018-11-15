@@ -1,106 +1,45 @@
 import logging
-import pickle
 
-import zmq
+from middleware.sink import SinkMiddleware
 
 
 class DataSink:
 
-    class ReducersConnection:
-        def __init__(self, endpoint):
-            context = zmq.Context()
-            self.server = context.socket(zmq.PULL)
-            self.server.bind(endpoint)
-
-        def receive_reducer_result(self):
-            b_data = self.server.recv()
-            return pickle.loads(b_data)
-
-    class ReducerSpawnerConnection:
-        def __init__(self, endpoint):
-            context = zmq.Context()
-            self.server = context.socket(zmq.REP)
-            self.server.bind(endpoint)
-
-        def receive_reducers_number(self):
-            return int(self.server.recv().decode())
-
-    class CollectorConnection:
-        def __init__(self, endpoint):
-            self.logger = logging.getLogger("CollectorConnection")
-
-            context = zmq.Context()
-            self.client = context.socket(zmq.PUSH)
-            self.client.connect(endpoint)
-
-        def send_result(self, result):
-            r = str(result)
-            self.logger.debug("Sending final result to collector: %r", r)
-            self.client.send_string(r)
-
-    class DispatcherConnection:
-        def __init__(self, endpoint, dispatcher_ready_endpoint):
-            self.logger = logging.getLogger("DispatcherConnection")
-
-            context = zmq.Context()
-
-            self.server = context.socket(zmq.PUSH)
-            self.server.bind(endpoint)
-
-            ack_server = context.socket(zmq.PULL)
-            ack_server.bind(dispatcher_ready_endpoint)
-            ack_server.recv()
-            self.logger.debug("Dispatcher ACK received")
-
-        def send_result(self, result):
-            self.logger.debug("Sending result to dispatcher: %r", result)
-            b_result = str(result) #pickle.dumps(result, -1)
-            self.server.send_string(b_result)
-
-        def close(self):
-            self.server.send_string("END")
-
-    def __init__(self, endpoint, collector_endpoint, ventilator_endpoint=None, dispatcher_ready_endpoint=None):
+    def __init__(self, endpoint, collector_endpoint, reducer_spawner_endpoint, ventilator_endpoint=None, dispatcher_ready_endpoint=None):
         self.logger = logging.getLogger("DataSink")
-        self.endpoint = endpoint
-        self.collector_endpoint = collector_endpoint
-        self.reducers_conn = None
-        self.collector_conn = None
-        self.ventilator_endpoint = ventilator_endpoint
-        self.dispatcher_ready_endpoint = dispatcher_ready_endpoint
-        self.dispatcher_conn = None
+        self.retroalimentation = False
+        if ventilator_endpoint and dispatcher_ready_endpoint:
+            self.retroalimentation = True
+        self.conn = SinkMiddleware(endpoint, collector_endpoint, reducer_spawner_endpoint, ventilator_endpoint, dispatcher_ready_endpoint)
 
-    def start(self, reducer_spawner_endpoint, fun):
-        self.reducers_conn = self.ReducersConnection(self.endpoint)
-        self.collector_conn = self.CollectorConnection(self.collector_endpoint)
-        if self.ventilator_endpoint and self.dispatcher_ready_endpoint:
-            self.dispatcher_conn = self.DispatcherConnection(self.ventilator_endpoint, self.dispatcher_ready_endpoint)
+    def start(self, fun):
 
-        reducer_spawner_conn = self.ReducerSpawnerConnection(reducer_spawner_endpoint)
         self.logger.debug("Receiving reducers quantity")
-        reducers = reducer_spawner_conn.receive_reducers_number()
+        reducers = self.conn.receive_reducers_number()
         self.logger.debug("Reducers quantity received: %d", reducers)
 
         results_received = 0
         results = []
         while True:
             self.logger.debug("Receiving result from reducers")
-            result = self.reducers_conn.receive_reducer_result()
+            result = self.conn.receive_reducer_result()
             self.logger.debug("Result received %r", result)
 
             results.append(result)
-
             results_received += 1
 
             if results_received == reducers:
                 self.logger.debug("All results have been received")
                 break
 
+        self.logger.debug("Formatting results")
         ans = fun(results)
 
-        self.collector_conn.send_result(ans)
+        self.logger.debug("Sending results to collector")
+        self.conn.send_result(ans)
 
-        if self.dispatcher_conn:
+        if self.retroalimentation:
+            self.logger.debug("Sending results to dispatcher")
             for result in ans:
-                self.dispatcher_conn.send_result(result)
-            self.dispatcher_conn.close()
+                self.conn.dispatcher_send_result(result)
+            self.conn.dispatcher_close()
