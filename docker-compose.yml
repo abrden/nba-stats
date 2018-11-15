@@ -8,6 +8,7 @@ services:
     networks:
       - 1net
       - 2net
+      - 31net
       - 32net
     environment:
       - VENT1_ENDPOINT=tcp://*:5570
@@ -60,9 +61,9 @@ services:
     depends_on:
       - entry
       - 1_sink
-      #- 31_middleware
-      #- 31_sink
-      #- 31_reducer
+      - 31_middleware
+      - 31_sink
+      - 31_reducer
     networks:
       - 31net
     environment:
@@ -133,7 +134,7 @@ services:
     depends_on:
       - entry
       - 31_middleware
-      #- 31_sink
+      - 31_sink
       - 31_reducer
       - 31_shotlogdispatcher
     networks:
@@ -298,16 +299,16 @@ services:
     depends_on:
       - entry
       - 31_middleware
-      #- 31_sink
+      - 31_sink
       - 31_reducerhandler
     networks:
         - 31net
     environment:
-      - MW_ENDPOINT=tcp://31_middleware:5705 #
-      - REDUCER_MW_READY_ENDPOINT=tcp://31_middleware:5706 #
-      - REDUCER_HANDLER_READY_ENDPOINT=tcp://31_reducerhandler:5708 #
-      - SINK_ENDPOINT=tcp://31_sink:5587
-      - KEYS_ENDPOINT=tcp://31_reducerhandler:5710 #
+      - MW_ENDPOINT=tcp://31_middleware:5705
+      - REDUCER_MW_READY_ENDPOINT=tcp://31_middleware:5706
+      - REDUCER_HANDLER_READY_ENDPOINT=tcp://31_reducerhandler:5708
+      - SINK_ENDPOINT=tcp://31_sink:5711
+      - KEYS_ENDPOINT=tcp://31_reducerhandler:5710
 
   31_reducerhandler:
     build:
@@ -316,16 +317,16 @@ services:
     depends_on:
       - entry
       - 31_middleware
-      #- 31_sink
+      - 31_sink
     networks:
       - 31net
     environment:
       - MAPPERS=2
       - REDUCERS=2
-      - KEY_QUEUE_ENDPOINT=tcp://*:5709 #
-      - KEYS_REDUCERS_ENDPOINT=tcp://*:5710 #
-      - REDUCERS_READY_ENDPOINT=tcp://*:5708 #
-      - SPAWNER_SINK_ENDPOINT=tcp://31_sink:5588
+      - KEY_QUEUE_ENDPOINT=tcp://*:5709
+      - KEYS_REDUCERS_ENDPOINT=tcp://*:5710
+      - REDUCERS_READY_ENDPOINT=tcp://*:5708
+      - SPAWNER_SINK_ENDPOINT=tcp://31_sink:5712
 
   32_reducer:
     build:
@@ -393,6 +394,20 @@ services:
     environment:
       - ENDPOINT=tcp://*:5568
       - REDUCER_SPAWNER_ENDPOINT=tcp://*:5569
+      - COLLECTOR_ENDPOINT=tcp://entry:5573
+
+  31_sink:
+    build:
+      context: .
+      dockerfile: 31_sink/Dockerfile
+    depends_on:
+      - entry
+      - 31_middleware
+    networks:
+      - 31net
+    environment:
+      - ENDPOINT=tcp://*:5711
+      - REDUCER_SPAWNER_ENDPOINT=tcp://*:5712
       - COLLECTOR_ENDPOINT=tcp://entry:5573
 
   32_sink:
