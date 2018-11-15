@@ -1,65 +1,18 @@
 import logging
-import pickle
 
-import zmq
+from middleware.pair_dispatcher import PairDispatcherMiddleware
 
 
 class PairDispatcher:
 
-    class ReducersConnection:
-        def __init__(self, reducers_ready_endpoint, reducers):
-            self.logger = logging.getLogger("ReducersConnection")
-            self.reducers = reducers
-
-            context = zmq.Context()
-
-            self.client = context.socket(zmq.PULL)
-            self.client.bind(reducers_ready_endpoint)
-
-        def wait_for_reducers_to_connect(self):
-            for _ in range(self.reducers):
-                self.client.recv()
-                self.logger.debug("Reducer ACK received")
-
-    class Connection:
-        def __init__(self, endpoint):
-            self.logger = logging.getLogger("MappersConnection")
-
-            context = zmq.Context()
-            self.server = context.socket(zmq.ROUTER)
-            self.server.bind(endpoint)
-
-        def receive_mapper_pair(self):
-            b_message = self.server.recv_multipart()  # FIXME why do I have to recv a multipart if mapper sent me a string
-            message = pickle.loads(b_message[3])
-            self.logger.debug("Pyobj received %r", message)
-            return message
-
-        def send_value_to_reducer(self, key, value):
-            b_key = str(key).encode()
-            b_value = pickle.dumps(value, -1)
-            self.server.send_multipart([b_key, b_value])
-
-        def close_conn_with_reducers(self, reducers):
-            for key in reducers:
-                self.send_value_to_reducer(key, "END")
-
     def __init__(self, mappers, reducers, endpoint, reducer_ready_endpoint):
         self.logger = logging.getLogger("PairDispatcher")
-
         self.mappers = mappers
-        self.reducers = reducers
-        self.endpoint = endpoint
-        self.reducer_ready_endpoint = reducer_ready_endpoint
-        self.reducers_conn = None
-        self.conn = None
+        self.conn = PairDispatcherMiddleware(reducers, endpoint, reducer_ready_endpoint)
 
     def start(self):
-        self.reducers_conn = self.ReducersConnection(self.reducer_ready_endpoint, self.reducers)
-        self.conn = self.Connection(self.endpoint)
-
         self.logger.debug("Waiting for reducer spawner signal")
-        self.reducers_conn.wait_for_reducers_to_connect()
+        self.conn.wait_for_reducers_to_connect()
         self.logger.debug("Signal received, sending data to reducers")
 
         keys = {}
@@ -87,4 +40,4 @@ class PairDispatcher:
             self.logger.debug("Task sent")
 
         self.logger.debug("Sending END to reducers")
-        self.conn.close_conn_with_reducers(keys)
+        self.conn.close_reducers_conn(keys)
