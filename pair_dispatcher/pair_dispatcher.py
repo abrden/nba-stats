@@ -4,7 +4,7 @@ import pickle
 import zmq
 
 
-class Middleware:
+class PairDispatcher:
 
     class ReducersConnection:
         def __init__(self, reducers_ready_endpoint, reducers):
@@ -45,7 +45,7 @@ class Middleware:
                 self.send_value_to_reducer(key, "END")
 
     def __init__(self, mappers, reducers, endpoint, reducer_ready_endpoint):
-        self.logger = logging.getLogger("Middleware")
+        self.logger = logging.getLogger("PairDispatcher")
 
         self.mappers = mappers
         self.reducers = reducers

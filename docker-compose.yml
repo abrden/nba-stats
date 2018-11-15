@@ -24,7 +24,7 @@ services:
       dockerfile: 1_shotlogdispatcher/Dockerfile
     depends_on:
       - entry
-      - 1_middleware
+      - 1_pairdispatcher
       - 1_sink
       - 1_reducer
     networks:
@@ -42,7 +42,7 @@ services:
       dockerfile: 2_shotlogdispatcher/Dockerfile
     depends_on:
       - entry
-      - 2_middleware
+      - 2_pairdispatcher
       - 2_sink
       - 2_reducer
     networks:
@@ -61,7 +61,7 @@ services:
     depends_on:
       - entry
       - 1_sink
-      - 31_middleware
+      - 31_pairdispatcher
       - 31_sink
       - 31_reducer
     networks:
@@ -79,7 +79,7 @@ services:
       dockerfile: 32_shotlogdispatcher/Dockerfile
     depends_on:
       - entry
-      - 32_middleware
+      - 32_pairdispatcher
       - 32_sink
       - 32_reducer
     networks:
@@ -97,14 +97,14 @@ services:
       dockerfile: 1_mapper/Dockerfile
     depends_on:
       - entry
-      - 1_middleware
+      - 1_pairdispatcher
       - 1_sink
       - 1_reducer
       - 1_shotlogdispatcher
     networks:
       - 1net
     environment:
-      - MW_ENDPOINT=tcp://1_middleware:5584
+      - MW_ENDPOINT=tcp://1_pairdispatcher:5584
       - KEYS_ENDPOINT=tcp://1_reducerhandler:5583
       - VENTILATOR_ENDPOINT=tcp://1_shotlogdispatcher:5580
       - MAPPERS_READY_ENDPOINT=tcp://1_shotlogdispatcher:5581
@@ -115,14 +115,14 @@ services:
       dockerfile: 2_mapper/Dockerfile
     depends_on:
       - entry
-      - 2_middleware
+      - 2_pairdispatcher
       - 2_sink
       - 2_reducer
       - 2_shotlogdispatcher
     networks:
       - 2net
     environment:
-      - MW_ENDPOINT=tcp://2_middleware:5559
+      - MW_ENDPOINT=tcp://2_pairdispatcher:5559
       - KEYS_ENDPOINT=tcp://2_reducerhandler:5560
       - VENTILATOR_ENDPOINT=tcp://2_shotlogdispatcher:5562
       - MAPPERS_READY_ENDPOINT=tcp://2_shotlogdispatcher:5563
@@ -133,14 +133,14 @@ services:
       dockerfile: 31_mapper/Dockerfile
     depends_on:
       - entry
-      - 31_middleware
+      - 31_pairdispatcher
       - 31_sink
       - 31_reducer
       - 31_shotlogdispatcher
     networks:
       - 31net
     environment:
-      - MW_ENDPOINT=tcp://31_middleware:5705
+      - MW_ENDPOINT=tcp://31_pairdispatcher:5705
       - KEYS_ENDPOINT=tcp://31_reducerhandler:5709
       - VENTILATOR_ENDPOINT=tcp://31_shotlogdispatcher:5701
       - MAPPERS_READY_ENDPOINT=tcp://31_shotlogdispatcher:5702
@@ -151,22 +151,22 @@ services:
       dockerfile: 32_mapper/Dockerfile
     depends_on:
       - entry
-      - 32_middleware
+      - 32_pairdispatcher
       - 32_sink
       - 32_reducer
       - 32_shotlogdispatcher
     networks:
       - 32net
     environment:
-      - MW_ENDPOINT=tcp://32_middleware:5592
+      - MW_ENDPOINT=tcp://32_pairdispatcher:5592
       - KEYS_ENDPOINT=tcp://32_reducerhandler:5593
       - VENTILATOR_ENDPOINT=tcp://32_shotlogdispatcher:5590
       - MAPPERS_READY_ENDPOINT=tcp://32_shotlogdispatcher:5591
 
-  1_middleware:
+  1_pairdispatcher:
     build:
       context: .
-      dockerfile: 1_middleware/Dockerfile
+      dockerfile: 1_pairdispatcher/Dockerfile
     depends_on:
       - entry
     networks:
@@ -177,10 +177,10 @@ services:
       - ENDPOINT=tcp://*:5584
       - REDUCER_READY_ENDPOINT=tcp://*:5585
 
-  2_middleware:
+  2_pairdispatcher:
     build:
       context: .
-      dockerfile: 2_middleware/Dockerfile
+      dockerfile: 2_pairdispatcher/Dockerfile
     depends_on:
       - entry
     networks:
@@ -191,10 +191,10 @@ services:
       - ENDPOINT=tcp://*:5559
       - REDUCER_READY_ENDPOINT=tcp://*:5561
 
-  31_middleware:
+  31_pairdispatcher:
     build:
       context: .
-      dockerfile: 31_middleware/Dockerfile
+      dockerfile: 31_pairdispatcher/Dockerfile
     depends_on:
       - entry
       - 1_sink
@@ -206,10 +206,10 @@ services:
       - ENDPOINT=tcp://*:5705
       - REDUCER_READY_ENDPOINT=tcp://*:5706
 
-  32_middleware:
+  32_pairdispatcher:
     build:
       context: .
-      dockerfile: 32_middleware/Dockerfile
+      dockerfile: 32_pairdispatcher/Dockerfile
     depends_on:
       - entry
     networks:
@@ -226,14 +226,14 @@ services:
       dockerfile: 1_reducer/Dockerfile
     depends_on:
       - entry
-      - 1_middleware
+      - 1_pairdispatcher
       - 1_sink
       - 1_reducerhandler
     networks:
         - 1net
     environment:
-      - MW_ENDPOINT=tcp://1_middleware:5584
-      - REDUCER_MW_READY_ENDPOINT=tcp://1_middleware:5585
+      - MW_ENDPOINT=tcp://1_pairdispatcher:5584
+      - REDUCER_MW_READY_ENDPOINT=tcp://1_pairdispatcher:5585
       - REDUCER_HANDLER_READY_ENDPOINT=tcp://1_reducerhandler:5586
       - SINK_ENDPOINT=tcp://1_sink:5587
       - KEYS_ENDPOINT=tcp://1_reducerhandler:5600
@@ -244,7 +244,7 @@ services:
       dockerfile: 1_reducerhandler/Dockerfile
     depends_on:
       - entry
-      - 1_middleware
+      - 1_pairdispatcher
       - 1_sink
     networks:
       - 1net
@@ -262,14 +262,14 @@ services:
       dockerfile: 2_reducer/Dockerfile
     depends_on:
       - entry
-      - 2_middleware
+      - 2_pairdispatcher
       - 2_sink
       - 2_reducerhandler
     networks:
       - 2net
     environment:
-      - MW_ENDPOINT=tcp://2_middleware:5559
-      - REDUCER_MW_READY_ENDPOINT=tcp://2_middleware:5561
+      - MW_ENDPOINT=tcp://2_pairdispatcher:5559
+      - REDUCER_MW_READY_ENDPOINT=tcp://2_pairdispatcher:5561
       - REDUCER_HANDLER_READY_ENDPOINT=tcp://2_reducerhandler:5564
       - SINK_ENDPOINT=tcp://2_sink:5568
       - KEYS_ENDPOINT=tcp://2_reducerhandler:5601
@@ -280,7 +280,7 @@ services:
       dockerfile: 2_reducerhandler/Dockerfile
     depends_on:
       - entry
-      - 2_middleware
+      - 2_pairdispatcher
       - 2_sink
     networks:
       - 2net
@@ -298,14 +298,14 @@ services:
       dockerfile: 31_reducer/Dockerfile
     depends_on:
       - entry
-      - 31_middleware
+      - 31_pairdispatcher
       - 31_sink
       - 31_reducerhandler
     networks:
         - 31net
     environment:
-      - MW_ENDPOINT=tcp://31_middleware:5705
-      - REDUCER_MW_READY_ENDPOINT=tcp://31_middleware:5706
+      - MW_ENDPOINT=tcp://31_pairdispatcher:5705
+      - REDUCER_MW_READY_ENDPOINT=tcp://31_pairdispatcher:5706
       - REDUCER_HANDLER_READY_ENDPOINT=tcp://31_reducerhandler:5708
       - SINK_ENDPOINT=tcp://31_sink:5711
       - KEYS_ENDPOINT=tcp://31_reducerhandler:5710
@@ -316,7 +316,7 @@ services:
       dockerfile: 31_reducerhandler/Dockerfile
     depends_on:
       - entry
-      - 31_middleware
+      - 31_pairdispatcher
       - 31_sink
     networks:
       - 31net
@@ -334,14 +334,14 @@ services:
       dockerfile: 32_reducer/Dockerfile
     depends_on:
       - entry
-      - 32_middleware
+      - 32_pairdispatcher
       - 32_sink
       - 32_reducerhandler
     networks:
       - 32net
     environment:
-      - MW_ENDPOINT=tcp://32_middleware:5592
-      - REDUCER_MW_READY_ENDPOINT=tcp://32_middleware:5594
+      - MW_ENDPOINT=tcp://32_pairdispatcher:5592
+      - REDUCER_MW_READY_ENDPOINT=tcp://32_pairdispatcher:5594
       - REDUCER_HANDLER_READY_ENDPOINT=tcp://32_reducerhandler:5595
       - SINK_ENDPOINT=tcp://32_sink:5596
       - KEYS_ENDPOINT=tcp://32_reducerhandler:5602
@@ -352,7 +352,7 @@ services:
       dockerfile: 32_reducerhandler/Dockerfile
     depends_on:
       - entry
-      - 32_middleware
+      - 32_pairdispatcher
       - 32_sink
     networks:
       - 32net
@@ -370,7 +370,7 @@ services:
       dockerfile: 1_sink/Dockerfile
     depends_on:
       - entry
-      - 1_middleware
+      - 1_pairdispatcher
     networks:
       - 1net
       - 31net
@@ -388,7 +388,7 @@ services:
       dockerfile: 2_sink/Dockerfile
     depends_on:
       - entry
-      - 2_middleware
+      - 2_pairdispatcher
     networks:
       - 2net
     environment:
@@ -402,7 +402,7 @@ services:
       dockerfile: 31_sink/Dockerfile
     depends_on:
       - entry
-      - 31_middleware
+      - 31_pairdispatcher
     networks:
       - 31net
     environment:
@@ -416,7 +416,7 @@ services:
       dockerfile: 32_sink/Dockerfile
     depends_on:
       - entry
-      - 32_middleware
+      - 32_pairdispatcher
     networks:
       - 32net
     environment:

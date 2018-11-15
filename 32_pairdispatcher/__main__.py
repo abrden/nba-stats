@@ -1,7 +1,7 @@
 import os
 import logging
 
-from middleware.middleware import Middleware
+from pair_dispatcher.pair_dispatcher import PairDispatcher
 
 logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(threadName)s: %(message)s")
 
@@ -14,7 +14,7 @@ reducer_ready_endpoint = os.environ['REDUCER_READY_ENDPOINT']
 def main():
     logger = logging.getLogger("Middleware")
     logger.debug("Start")
-    mw = Middleware(mappers, reducers, endpoint, reducer_ready_endpoint)
+    mw = PairDispatcher(mappers, reducers, endpoint, reducer_ready_endpoint)
     mw.start()
     logger.debug("End")
 
