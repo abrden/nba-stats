@@ -29,6 +29,9 @@ class MapperMiddleware:
         def notify_key(self, key):
             self.key_queue_socket.send_string(str(key))
 
+        def close(self):
+            self.key_queue_socket.send_string("END")
+
     class MiddlewareConnection:
         def __init__(self, mw_endpoint):
             context = zmq.Context()
@@ -41,6 +44,9 @@ class MapperMiddleware:
         def send(self, data):
             b_data = pickle.dumps(data, -1)
             self.mw_socket.send(b_data)
+
+        def close(self):
+            self.send(b"END")
 
     def __init__(self, mw_endpoint, key_queue_endpoint, ventilator_endpoint, mappers_ready_endpoint):
         self.mw_endpoint = mw_endpoint
@@ -59,3 +65,7 @@ class MapperMiddleware:
 
     def send(self, data):
         self.mw.send(data)
+
+    def dispatcher_and_handler_close(self):
+        self.reducer_spawner_conn.close()
+        self.mw.close()
