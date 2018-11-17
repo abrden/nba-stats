@@ -15,7 +15,7 @@ services:
       - VENT2_ENDPOINT=tcp://*:5571
       - VENT3_ENDPOINT=tcp://*:5572
       - ENDPOINT=tcp://*:5573
-      - DATASET_DIR=NBA-shot-log
+      - DATASET_DIR=NBA-shot-log-sample
       - DISPATCHER_READY_ENDPOINT=tcp://*:5700
 
   1_shotlogdispatcher:
@@ -30,7 +30,7 @@ services:
     networks:
       - 1net
     environment:
-      - MAPPERS=2
+      - MAPPERS=1
       - ENTRY_ENDPOINT=tcp://entry:5570
       - ENDPOINT=tcp://*:5580
       - MAPPERS_READY_ENDPOINT=tcp://*:5581
@@ -48,7 +48,7 @@ services:
     networks:
       - 2net
     environment:
-      - MAPPERS=2
+      - MAPPERS=1
       - ENTRY_ENDPOINT=tcp://entry:5571
       - ENDPOINT=tcp://*:5562
       - MAPPERS_READY_ENDPOINT=tcp://*:5563
@@ -67,7 +67,7 @@ services:
     networks:
       - 31net
     environment:
-      - MAPPERS=2
+      - MAPPERS=1
       - ENTRY_ENDPOINT=tcp://1_sink:5703
       - ENDPOINT=tcp://*:5701
       - MAPPERS_READY_ENDPOINT=tcp://*:5702
@@ -85,7 +85,7 @@ services:
     networks:
       - 32net
     environment:
-      - MAPPERS=2
+      - MAPPERS=1
       - ENTRY_ENDPOINT=tcp://entry:5572
       - ENDPOINT=tcp://*:5590
       - MAPPERS_READY_ENDPOINT=tcp://*:5591
@@ -172,8 +172,8 @@ services:
     networks:
       - 1net
     environment:
-      - MAPPERS=2
-      - REDUCERS=2
+      - MAPPERS=1
+      - REDUCERS=1
       - ENDPOINT=tcp://*:5584
       - REDUCER_READY_ENDPOINT=tcp://*:5585
 
@@ -186,8 +186,8 @@ services:
     networks:
       - 2net
     environment:
-      - MAPPERS=2
-      - REDUCERS=2
+      - MAPPERS=1
+      - REDUCERS=1
       - ENDPOINT=tcp://*:5559
       - REDUCER_READY_ENDPOINT=tcp://*:5561
 
@@ -201,8 +201,8 @@ services:
     networks:
       - 31net
     environment:
-      - MAPPERS=2
-      - REDUCERS=2
+      - MAPPERS=1
+      - REDUCERS=1
       - ENDPOINT=tcp://*:5705
       - REDUCER_READY_ENDPOINT=tcp://*:5706
 
@@ -215,8 +215,8 @@ services:
     networks:
       - 32net
     environment:
-      - MAPPERS=2
-      - REDUCERS=2
+      - MAPPERS=1
+      - REDUCERS=1
       - ENDPOINT=tcp://*:5592
       - REDUCER_READY_ENDPOINT=tcp://*:5594
 
@@ -249,8 +249,8 @@ services:
     networks:
       - 1net
     environment:
-      - MAPPERS=2
-      - REDUCERS=2
+      - MAPPERS=1
+      - REDUCERS=1
       - KEY_QUEUE_ENDPOINT=tcp://*:5583
       - KEYS_REDUCERS_ENDPOINT=tcp://*:5600
       - REDUCERS_READY_ENDPOINT=tcp://*:5586
@@ -285,8 +285,8 @@ services:
     networks:
       - 2net
     environment:
-      - MAPPERS=2
-      - REDUCERS=2
+      - MAPPERS=1
+      - REDUCERS=1
       - KEY_QUEUE_ENDPOINT=tcp://*:5560
       - KEYS_REDUCERS_ENDPOINT=tcp://*:5601
       - REDUCERS_READY_ENDPOINT=tcp://*:5564
@@ -321,8 +321,8 @@ services:
     networks:
       - 31net
     environment:
-      - MAPPERS=2
-      - REDUCERS=2
+      - MAPPERS=1
+      - REDUCERS=1
       - KEY_QUEUE_ENDPOINT=tcp://*:5709
       - KEYS_REDUCERS_ENDPOINT=tcp://*:5710
       - REDUCERS_READY_ENDPOINT=tcp://*:5708
@@ -357,8 +357,8 @@ services:
     networks:
       - 32net
     environment:
-      - MAPPERS=2
-      - REDUCERS=2
+      - MAPPERS=1
+      - REDUCERS=1
       - KEY_QUEUE_ENDPOINT=tcp://*:5593
       - KEYS_REDUCERS_ENDPOINT=tcp://*:5602
       - REDUCERS_READY_ENDPOINT=tcp://*:5595
