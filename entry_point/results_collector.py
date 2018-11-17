@@ -1,32 +1,19 @@
 import logging
 
-import zmq
+from middleware.entry import ResultsCollectorMiddleware
 
 
 class ResultsCollector:
 
-    class SinksConnection:
-        def __init__(self, endpoint):
-            context = zmq.Context()
-            self.server = context.socket(zmq.PULL)
-            self.server.bind(endpoint)
-
-        def receive_result(self):
-            return self.server.recv()
-
     def __init__(self, endpoint):
         self.logger = logging.getLogger("ResultsCollector")
-
-        self.endpoint = endpoint
-        self.sinks_conn = None
+        self.conn = ResultsCollectorMiddleware(endpoint)
 
     def start(self):
-        self.sinks_conn = self.SinksConnection(self.endpoint)
-
         results = []
-        for _ in range(3):  # TODO receive the results of all operations
+        for _ in range(4):
             self.logger.debug("Receiving result")
-            result = self.sinks_conn.receive_result()
+            result = self.conn.receive_result()
             self.logger.debug("Result received: %r", result)
             results.append(result)
 

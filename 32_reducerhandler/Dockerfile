@@ -9,6 +9,7 @@ RUN pip3 install zmq
 
 COPY ./32_reducerhandler /32_reducerhandler_bundle/32_reducerhandler
 COPY ./reducer_handler /32_reducerhandler_bundle/reducer_handler
+COPY ./middleware /32_reducerhandler_bundle/middleware
 
 ENTRYPOINT [ "python3" ]
 

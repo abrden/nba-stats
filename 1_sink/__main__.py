@@ -9,6 +9,8 @@ logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s:%(thread
 endpoint = os.environ['ENDPOINT']
 reducer_spawner_endpoint = os.environ['REDUCER_SPAWNER_ENDPOINT']
 collector_endpoint = os.environ['COLLECTOR_ENDPOINT']
+ventilator_endpoint = os.environ['VENTILATOR_ENDPOINT']
+dispatcher_ready_endpoint = os.environ['DISPATCHER_READY_ENDPOINT']
 
 
 def format_result(result):
@@ -32,8 +34,8 @@ def collect_fun(results):
 def main():
     logger = logging.getLogger("Sink")
     logger.debug("Start")
-    sink = DataSink(endpoint, collector_endpoint)
-    sink.start(reducer_spawner_endpoint, collect_fun)
+    sink = DataSink(endpoint, collector_endpoint, reducer_spawner_endpoint, ventilator_endpoint, dispatcher_ready_endpoint)
+    sink.start(collect_fun)
     logger.debug("End")
 
 

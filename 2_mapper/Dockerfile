@@ -9,6 +9,7 @@ RUN pip3 install zmq
 
 COPY ./2_mapper /2_mapper_bundle/2_mapper
 COPY ./mapper /2_mapper_bundle/mapper
+COPY ./middleware /2_mapper_bundle/middleware
 
 ENTRYPOINT [ "python3" ]
 

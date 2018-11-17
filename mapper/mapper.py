@@ -1,70 +1,21 @@
 import logging
-import pickle
 
-import zmq
+from middleware.mapper import MapperMiddleware
 
 
 class Mapper:
 
-    class VentilatorConnection:
-        def __init__(self, ventilator_endpoint, mappers_ready_endpoint):
-            context = zmq.Context()
-
-            self.receiver = context.socket(zmq.PULL)
-            self.receiver.connect(ventilator_endpoint)
-
-            mappers_ready_ack = context.socket(zmq.PUSH)
-            mappers_ready_ack.connect(mappers_ready_endpoint)
-            mappers_ready_ack.send(b"READY")
-
-        def receive_task(self):
-            return self.receiver.recv()
-
-    class ReducerSpawnerConnection:
-        def __init__(self, key_queue_endpoint):
-            context = zmq.Context()
-
-            self.key_queue_socket = context.socket(zmq.PUSH)
-            self.key_queue_socket.connect(key_queue_endpoint)
-
-        def notify_key(self, key):
-            return self.key_queue_socket.send_string(str(key))
-
-    class MiddlewareConnection:
-        def __init__(self, mw_endpoint):
-            context = zmq.Context()
-
-            self.mw_socket = context.socket(zmq.REQ)
-            self.mw_socket.setsockopt(zmq.REQ_RELAXED, 1)
-            self.mw_socket.setsockopt(zmq.REQ_CORRELATE, 1)
-            self.mw_socket.connect(mw_endpoint)
-
-        def send(self, data):
-            b_data = pickle.dumps(data, -1)
-            return self.mw_socket.send(b_data)
-
     def __init__(self, mw_endpoint, key_queue_endpoint, ventilator_endpoint, mappers_ready_endpoint):
         self.logger = logging.getLogger("Mapper")
-        self.mw_endpoint = mw_endpoint
-        self.key_queue_endpoint = key_queue_endpoint
-        self.ventilator_endpoint = ventilator_endpoint
-        self.mappers_ready_endpoint = mappers_ready_endpoint
-        self.ventilator_conn = None
-        self.reducer_spawner_conn = None
-        self.mw = None
+        self.conn = MapperMiddleware(mw_endpoint, key_queue_endpoint, ventilator_endpoint, mappers_ready_endpoint)
 
     def start(self, fun):
-        self.ventilator_conn = self.VentilatorConnection(self.ventilator_endpoint, self.mappers_ready_endpoint)
-        self.reducer_spawner_conn = self.ReducerSpawnerConnection(self.key_queue_endpoint)
-        self.mw = self.MiddlewareConnection(self.mw_endpoint)  # FIXME doesnt work if I initialize it on the constructor
-
         while True:
-            self.logger.debug("Waiting for task from ventilator")
-            task = self.ventilator_conn.receive_task()
+            self.logger.debug("Waiting for task from shotlog_dispatcher")
+            task = self.conn.receive_task()
             if task == b"END":
                 self.logger.debug("END received")
-                self.reducer_spawner_conn.notify_key("END")  # TODO Implement close method for conn objects
-                self.mw.send(b"END")
+                self.conn.dispatcher_and_handler_close()
                 return
             self.logger.debug("Task received: %s", task)
 
@@ -72,7 +23,7 @@ class Mapper:
             if result:
                 key, value = result
                 self.logger.debug("Emitting result: (%s, %s)", key, value)
-                self.reducer_spawner_conn.notify_key(key)
-                self.mw.send(result)
+                self.conn.notify_key(key)
+                self.conn.send(result)
             else:
                 self.logger.debug("Result is None. Not emitting.")
