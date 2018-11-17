@@ -56,5 +56,4 @@ class Reducer:
         self.logger.debug("Sending final result %r to sink", acc)
         self.conn.send_result(acc)
 
-        import time
-        time.sleep(1)  # FIXME Wait for sink to read it before exiting
+        self.conn.close()

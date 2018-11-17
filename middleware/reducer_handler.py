@@ -15,6 +15,9 @@ class ReducerHandlerMiddleware:
         def receive_key(self):
             return self.server.recv()
 
+        def close(self):
+            self.server.close()
+
     class ReducersConnection:
         def __init__(self, reducers, endpoint, reducers_ready_endpoint):
             context = zmq.Context()
@@ -22,6 +25,7 @@ class ReducerHandlerMiddleware:
             self.logger = logging.getLogger("ReducersConnection")
 
             self.socket = context.socket(zmq.PUSH)
+            self.socket.setsockopt(zmq.LINGER, -1)
             self.socket.bind(endpoint)
 
             reducers_ready_ack = context.socket(zmq.PULL)
@@ -31,6 +35,7 @@ class ReducerHandlerMiddleware:
             for _ in range(self.reducers):
                 ack = reducers_ready_ack.recv()
                 self.logger.debug("Reducer ACK received: %r", ack)
+            reducers_ready_ack.close()
 
         def send_key(self, key):
             self.logger.debug("Sending key to reducer")
@@ -40,16 +45,19 @@ class ReducerHandlerMiddleware:
         def close(self):
             for _ in range(self.reducers):
                 self.socket.send_string("END")
+            self.socket.close()
 
     class SinkConnection:
         def __init__(self, endpoint):
             context = zmq.Context()
 
             self.client = context.socket(zmq.REQ)
+            self.client.setsockopt(zmq.LINGER, -1)
             self.client.connect(endpoint)
 
         def notify_reducers_quantity(self, reducers):
             self.client.send_string(str(reducers))
+            self.client.close()
 
     def __init__(self, reducers, key_queue_endpoint, keys_to_reducers_endpoint, reducers_ready_endpoint, sink_endpoint):
         self.mappers_conn = self.MappersConnection(key_queue_endpoint)
@@ -64,6 +72,7 @@ class ReducerHandlerMiddleware:
 
     def close_reducers_connection(self):
         self.reducers_conn.close()
+        self.mappers_conn.close()
 
     def notify_reducers_quantity(self, keys_quantity):
         self.sink_conn.notify_reducers_quantity(keys_quantity)

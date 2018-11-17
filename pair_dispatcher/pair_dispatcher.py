@@ -39,5 +39,5 @@ class PairDispatcher:
             self.conn.send_value_to_reducer(key, value)
             self.logger.debug("Task sent")
 
-        self.logger.debug("Sending END to reducers")
+        self.logger.debug("Sending END to reducers: %r", keys)
         self.conn.close_reducers_conn(keys)

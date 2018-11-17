@@ -20,6 +20,7 @@ class PairDispatcherMiddleware:
             for _ in range(self.reducers):
                 self.client.recv()
                 self.logger.debug("Reducer ACK received")
+            self.client.close()
 
     class Connection:
         def __init__(self, endpoint):
@@ -27,6 +28,7 @@ class PairDispatcherMiddleware:
 
             context = zmq.Context()
             self.server = context.socket(zmq.ROUTER)
+            self.server.setsockopt(zmq.LINGER, -1)
             self.server.bind(endpoint)
 
         def receive_mapper_pair(self):
@@ -43,6 +45,7 @@ class PairDispatcherMiddleware:
         def close_conn_with_reducers(self, reducers):
             for key in reducers:
                 self.send_value_to_reducer(key, "END")
+            self.server.close()
 
     def __init__(self, reducers, endpoint, reducer_ready_endpoint):
         self.reducers_conn = self.ReducersConnection(reducer_ready_endpoint, reducers)

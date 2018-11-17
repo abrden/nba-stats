@@ -17,4 +17,5 @@ class ResultsCollector:
             self.logger.debug("Result received: %r", result)
             results.append(result)
 
+        self.conn.close()
         return results

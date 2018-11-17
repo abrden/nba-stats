@@ -15,7 +15,7 @@ class Mapper:
             task = self.conn.receive_task()
             if task == b"END":
                 self.logger.debug("END received")
-                self.conn.dispatcher_and_handler_close()
+                self.conn.close()
                 return
             self.logger.debug("Task received: %s", task)
 

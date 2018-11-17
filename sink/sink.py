@@ -43,3 +43,5 @@ class DataSink:
             for result in ans:
                 self.conn.dispatcher_send_result(result)
             self.conn.dispatcher_close()
+
+        self.conn.close()
