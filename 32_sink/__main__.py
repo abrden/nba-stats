@@ -33,6 +33,8 @@ def collect_fun(results):
 
     pool = Pool()
     formatted_results = pool.map(format_result, results)
+    pool.close()
+    pool.join()
     return formatted_results
 
 

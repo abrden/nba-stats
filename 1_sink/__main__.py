@@ -27,6 +27,8 @@ def collect_fun(results):
     logger.debug("results %r", results)
     pool = Pool()
     decoded_results = pool.map(format_result, results)
+    pool.close()
+    pool.join()
     logger.debug("decoded results %r", decoded_results)
     return decoded_results
 
