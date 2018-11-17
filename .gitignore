@@ -118,3 +118,6 @@ routing.ipc
 
 # Mac
 .DS_Store
+
+# Logs
+log*
