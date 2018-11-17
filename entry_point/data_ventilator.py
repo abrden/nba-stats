@@ -27,6 +27,7 @@ class DataVentilator:
                 while line:
                     self.logger.debug("Read line: %s", line)
                     self.conn.send_shotlog(line)
+                    self.logger.debug("Line sent")
                     line = file.readline()
 
         self.conn.close()
